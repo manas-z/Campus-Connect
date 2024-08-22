@@ -1,0 +1,140 @@
+/* Import the correct font */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+body {
+  margin: 0;
+  font-family: 'Poppins', sans-serif; /* Updated font to match the design */
+  background-color: #181c32; /* Dark blue background */
+  color: #f8f8f2;
+}
+
+.dashboard-page {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.header {
+  padding: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: white;
+  width: 100%;
+  background-color: #181c32; /* Dark blue background */
+  position: fixed; /* Fix the navbar at the top */
+  top: 0;
+  left: 0;
+  z-index: 1000; /* Ensure the header is above other content */
+}
+
+.header .logo {
+  font-size: 1.5em;
+  font-weight: 500;
+}
+
+.user-search {
+  display: flex;
+  align-items: center;
+}
+
+.user-search .icon {
+  color: #ffffff;
+  font-size: 24px;
+  cursor: pointer;
+  margin-left: 15px;
+}
+
+.user-search .search-bar {
+  padding: 8px;
+  font-size: 16px;
+  border: none;
+  border-radius: 5px;
+  outline: none;
+  margin-right: 10px;
+}
+
+.content {
+  display: flex;
+  flex: 1;
+  margin-top: 80px; /* Adjust the margin to make space for the fixed navbar */
+}
+
+.sidebar {
+  width: 240px;
+  background: linear-gradient(180deg, #18a1ff, #1665d8); /* Gradient background */
+  padding: 20px;
+  color: white;
+  height: calc(100vh - 80px); /* Adjust height to account for the fixed navbar */
+  position: fixed;
+  top: 80px; /* Start the sidebar just below the fixed navbar */
+  left: 0;
+  border-radius: 15px 15px 15px 15px; /* Round both top and bottom edges */
+  z-index: 999; /* Ensure sidebar stays above other elements */
+}
+
+.sidebar h2 {
+  margin-bottom: 20px;
+  color: white;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+}
+
+.sidebar ul {
+  list-style: none;
+  padding: 0;
+}
+
+.sidebar ul li {
+  margin: 20px 0;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  color: #ffffff; /* White text for the icons and labels */
+  font-weight: 500;
+  transition: color 0.3s ease;
+}
+
+.sidebar ul li:hover {
+  color: #cfd8dc; /* Light gray on hover */
+}
+
+.sidebar ul li svg {
+  margin-right: 10px; /* Add spacing between the icon and the text */
+  font-size: 18px;
+}
+
+.main-content {
+  margin-left: 260px; /* Align the main content to the right of the sidebar */
+  padding: 20px;
+  flex: 1;
+  overflow-y: auto;
+  background-color: #181c32; /* Match the same dark blue as the overall background */
+}
+
+.dashboard {
+  color: white;
+}
+
+.performance, .stats {
+  margin-bottom: 20px;
+}
+
+.performance h3 {
+  margin-bottom: 10px;
+  color: #ffffff;
+}
+
+.stats {
+  display: flex;
+  justify-content: space-between;
+}
+
+.stats .box {
+  width: 30%;
+  background-color: #1f2136; /* Background color for the stat cards */
+  padding: 20px;
+  border-radius: 8px;
+  color: #ffffff;
+}

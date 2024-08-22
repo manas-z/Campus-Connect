@@ -14,7 +14,7 @@ const Test = () => {
       {/* Navbar */}
       <nav className="navbar navbar-expand-lg fixed-top">
         <div className="container">
-          <a className="navbar-brand" href="#">Campus Connect</a>
+          {/* <a className="navbar-brand" href="#">Campus Connect - Manas</a> */}
           <button
             className="navbar-toggler"
             type="button"

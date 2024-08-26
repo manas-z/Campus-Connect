@@ -1,10 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Line, Bar } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js';
 import { FaTachometerAlt, FaIcons, FaMap, FaBell, FaUser, FaTable, FaFont, FaLifeRing, FaSearch } from 'react-icons/fa';
 import './Dashboard.css';
 
-// Register the necessary components
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -18,6 +17,29 @@ ChartJS.register(
 
 const DashboardPage = () => {
   const [showSearch, setShowSearch] = useState(false);
+  const [userName, setUserName] = useState('');
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      const email = localStorage.getItem('userEmail');
+      if (!email) return;
+
+      try {
+        const response = await fetch(`http://localhost:5000/user-info?email=${email}`);
+        const data = await response.json();
+        if (response.ok) {
+          setUserName(data.name);
+          alert(`Welcome, ${data.name}!`);
+        } else {
+          console.error(data.error);
+        }
+      } catch (err) {
+        console.error('Error fetching user data:', err);
+      }
+    };
+
+    fetchUserData();
+  }, []);
 
   const toggleSearch = () => {
     setShowSearch(!showSearch);

@@ -1,21 +1,42 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
-import './style.css'; // Assuming you have the same CSS file
+import './style.css';
 
 const Login = () => {
-  const navigate = useNavigate();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [passwordVisible, setPasswordVisible] = useState(false);
+  const navigate = useNavigate();
 
   const togglePasswordVisibility = () => {
     setPasswordVisible(!passwordVisible);
   };
 
-  const validateForm = (event) => {
+  const handleLogin = async (event) => {
     event.preventDefault();
-    // Add any validation logic here if needed
-    navigate('/DashboardPage');
+  
+    try {
+      const response = await fetch('http://localhost:5000/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+  
+      const data = await response.json();
+      if (response.ok) {
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('userEmail', email); // Save user email for later use
+        navigate('/dashboardpage');
+      } else {
+        alert(data.error);
+      }
+    } catch (err) {
+      console.error('Error:', err);
+    }
   };
 
   return (
@@ -23,46 +44,8 @@ const Login = () => {
       {/* Navbar */}
       <nav className="navbar navbar-expand-lg fixed-top">
         <div className="container">
-          <Link className="navbar-brand" to="#container">Campus Connect</Link>
-          <button
-            className="navbar-toggler"
-            type="button"
-            data-bs-toggle="collapse"
-            data-bs-target="#navbarNav"
-            aria-controls="navbarNav"
-            aria-expanded="false"
-            aria-label="Toggle navigation"
-          >
-            <span className="navbar-toggler-icon"></span>
-          </button>
-          <div className="collapse navbar-collapse" id="navbarNav">
-            <ul className="nav nav-pills mx-auto">
-              <li className="nav-item">
-                <Link className="nav-link active" aria-current="page" to="/">Home</Link>
-              </li>
-              <li className="nav-item">
-                <Link className="nav-link" to="/test#features">Features</Link>
-              </li>
-              <li className="nav-item">
-                <Link className="nav-link" to="#">Contact</Link>
-              </li>
-              <li className="nav-item">
-                <Link className="nav-link" to="#">FAQ</Link>
-              </li>
-            </ul>
-            <div className="header-right">
-              <div className="dropdown">
-                <Link className="btn btn-primary ml-2 dropdown-toggle" to="/registration1">
-                  Register Now
-                </Link>
-                <ul className="dropdown-menu">
-                  <li>
-                    <Link className="dropdown-item" to="/login">Login</Link>
-                  </li>
-                </ul>
-              </div>
-            </div>
-          </div>
+          <a className="navbar-brand" href="#container">Campus Connect</a>
+          {/* Navbar content */}
         </div>
       </nav>
 
@@ -75,9 +58,17 @@ const Login = () => {
                 <div className="card-body p-4 p-md-5">
                   <h3 className="mb-4 pb-2 pb-md-0 mb-md-5 px-md-2 text-light">Login</h3>
 
-                  <form className="px-md-2" onSubmit={validateForm}>
+                  <form className="px-md-2" onSubmit={handleLogin}>
                     <div className="form-outline mb-4 position-relative">
-                      <input type="email" id="form3Example1e" className="form-control" placeholder="Email" required />
+                      <input
+                        type="email"
+                        id="form3Example1e"
+                        className="form-control"
+                        placeholder="Email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        required
+                      />
                     </div>
 
                     <div className="form-outline mb-4 position-relative">
@@ -86,6 +77,8 @@ const Login = () => {
                         id="form3Example1p"
                         className="form-control"
                         placeholder="Password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
                         required
                       />
                       <button
@@ -93,15 +86,12 @@ const Login = () => {
                         type="button"
                         onClick={togglePasswordVisibility}
                       >
-                        <i className={`bi ${passwordVisible ? 'bi-eye-slash' : 'bi-eye'}`} id="togglePasswordIcon1"></i>
+                        <i className={`bi ${passwordVisible ? 'bi-eye-slash' : 'bi-eye'}`}></i>
                       </button>
                     </div>
 
-                    <button type="submit" className="btn btn-success btn-lg mb-1">
-                      Login
-                    </button>
+                    <button type="submit" className="btn btn-success btn-lg mb-1">Login</button>
                   </form>
-
                 </div>
               </div>
             </div>

@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
-import { Link, useNavigate } from 'react-router-dom';
 import './style.css';
 
 const Registration1 = () => {
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [repeatPassword, setRepeatPassword] = useState('');
   const [passwordVisible, setPasswordVisible] = useState(false);
@@ -15,18 +16,33 @@ const Registration1 = () => {
     setVisibility((prevVisibility) => !prevVisibility);
   };
 
-  const validateForm = (event) => {
+  const validateForm = async (event) => {
     event.preventDefault();
     if (password !== repeatPassword) {
       alert('Passwords do not match!');
-      return false;
+      return;
     }
-    navigate('/registration2');
-    return true;
-  };
 
-  const redirectToLogin = () => {
-    navigate('/login');
+    try {
+      const response = await fetch('http://localhost:5000/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        alert(data.message);
+        localStorage.setItem('userEmail', email); // Store email for Registration2
+        navigate('/registration2'); // Redirect to additional info form
+      } else {
+        alert(data.error);
+      }
+    } catch (err) {
+      console.error('Error:', err);
+    }
   };
 
   return (
@@ -49,26 +65,26 @@ const Registration1 = () => {
           <div className="collapse navbar-collapse" id="navbarNav">
             <ul className="nav nav-pills mx-auto">
               <li className="nav-item">
-                <Link className="nav-link active" aria-current="page" to="/">Home</Link>
+                <a className="nav-link active" aria-current="page" href="/">Home</a>
               </li>
               <li className="nav-item">
-                <Link className="nav-link" to="/#footer">Features</Link>
+                <a className="nav-link" href="/#footer">Features</a>
               </li>
               <li className="nav-item">
-                <Link className="nav-link" to="#">Contact</Link>
+                <a className="nav-link" href="#">Contact</a>
               </li>
               <li className="nav-item">
-                <Link className="nav-link" to="#">FAQ</Link>
+                <a className="nav-link" href="#">FAQ</a>
               </li>
             </ul>
             <div className="header-right">
               <div className="dropdown">
-                <Link className="btn btn-primary ml-2 dropdown-toggle" to="/registration1">
+                <a className="btn btn-primary ml-2 dropdown-toggle" href="/registration1">
                   Register Now
-                </Link>
+                </a>
                 <ul className="dropdown-menu">
                   <li>
-                    <Link className="dropdown-item" to="/login">Login</Link>
+                    <a className="dropdown-item" href="/login">Login</a>
                   </li>
                 </ul>
               </div>
@@ -88,7 +104,15 @@ const Registration1 = () => {
 
                   <form className="px-md-2" onSubmit={validateForm}>
                     <div className="form-outline mb-4 position-relative">
-                      <input type="email" id="form3Example1e" className="form-control" placeholder="Email" required />
+                      <input
+                        type="email"
+                        id="form3Example1e"
+                        className="form-control"
+                        placeholder="Email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        required
+                      />
                     </div>
 
                     <div className="form-outline mb-4 position-relative">
@@ -106,7 +130,7 @@ const Registration1 = () => {
                         type="button"
                         onClick={() => togglePasswordVisibility(setPasswordVisible)}
                       >
-                        <i className={`bi ${passwordVisible ? 'bi-eye-slash' : 'bi-eye'}`} id="togglePasswordIcon1"></i>
+                        <i className={`bi ${passwordVisible ? 'bi-eye-slash' : 'bi-eye'}`}></i>
                       </button>
                     </div>
 
@@ -125,7 +149,7 @@ const Registration1 = () => {
                         type="button"
                         onClick={() => togglePasswordVisibility(setRepeatPasswordVisible)}
                       >
-                        <i className={`bi ${repeatPasswordVisible ? 'bi-eye-slash' : 'bi-eye'}`} id="togglePasswordIcon2"></i>
+                        <i className={`bi ${repeatPasswordVisible ? 'bi-eye-slash' : 'bi-eye'}`}></i>
                       </button>
                     </div>
 

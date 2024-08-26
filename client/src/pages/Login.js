@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import './style.css';
@@ -44,8 +44,42 @@ const Login = () => {
       {/* Navbar */}
       <nav className="navbar navbar-expand-lg fixed-top">
         <div className="container">
-          <a className="navbar-brand" href="#container">Campus Connect</a>
-          {/* Navbar content */}
+          <Link className="navbar-brand" to="/">Campus Connect</Link>
+          <button
+            className="navbar-toggler"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#navbarNav"
+            aria-controls="navbarNav"
+            aria-expanded="false"
+            aria-label="Toggle navigation"
+          >
+            <span className="navbar-toggler-icon"></span>
+          </button>
+          <div className="collapse navbar-collapse" id="navbarNav">
+            <ul className="nav nav-pills mx-auto">
+              <li className="nav-item">
+                <Link className="nav-link" to="/">Home</Link>
+              </li>
+              <li className="nav-item">
+                <Link className="nav-link" to="/#footer">Features</Link>
+              </li>
+              <li className="nav-item">
+                <Link className="nav-link" to="#">Contact</Link>
+              </li>
+              <li className="nav-item">
+                <Link className="nav-link" to="#">FAQ</Link>
+              </li>
+            </ul>
+            <div className="navbar-buttons">
+              <Link className="btn btn-primary ml-2" to="/registration1">
+                Register Now
+              </Link>
+              <Link className="btn btn-secondary ml-2" to="/login">
+                Login
+              </Link>
+            </div>
+          </div>
         </div>
       </nav>
 

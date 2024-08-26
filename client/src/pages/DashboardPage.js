@@ -1,7 +1,26 @@
 import React, { useState, useEffect } from 'react';
 import { Line, Bar } from 'react-chartjs-2';
-import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js';
-import { FaTachometerAlt, FaIcons, FaMap, FaBell, FaUser, FaTable, FaFont, FaLifeRing, FaSearch } from 'react-icons/fa';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend
+} from 'chart.js';
+import {
+  FaTachometerAlt,
+  FaIcons,
+  FaMap,
+  FaBell,
+  FaTable,
+  FaFont,
+  FaLifeRing,
+  FaSearch
+} from 'react-icons/fa';
 import './Dashboard.css';
 
 ChartJS.register(
@@ -18,6 +37,8 @@ ChartJS.register(
 const DashboardPage = () => {
   const [showSearch, setShowSearch] = useState(false);
   const [userName, setUserName] = useState('');
+  const [profileImage, setProfileImage] = useState('');
+  const [showDropdown, setShowDropdown] = useState(false);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -29,6 +50,7 @@ const DashboardPage = () => {
         const data = await response.json();
         if (response.ok) {
           setUserName(data.name);
+          setProfileImage(data.profileImage); // Assuming server returns image URL
           alert(`Welcome, ${data.name}!`);
         } else {
           console.error(data.error);
@@ -43,6 +65,10 @@ const DashboardPage = () => {
 
   const toggleSearch = () => {
     setShowSearch(!showSearch);
+  };
+
+  const toggleDropdown = () => {
+    setShowDropdown(!showDropdown);
   };
 
   const lineData = {
@@ -107,7 +133,17 @@ const DashboardPage = () => {
         <div className="user-search">
           {showSearch && <input type="text" className="search-bar" placeholder="Search..." />}
           <FaSearch className="icon" onClick={toggleSearch} />
-          <FaUser className="icon user-icon" />
+          {/* User Profile Section */}
+          <div className="user-profile" onClick={toggleDropdown}>
+            <img src={profileImage} alt="Profile" className="profile-image" />
+            <span className="user-name">{userName}</span>
+            {showDropdown && (
+              <div className="dropdown-menu">
+                <div className="dropdown-item">See Profile</div>
+                <div className="dropdown-item">Edit Profile</div>
+              </div>
+            )}
+          </div>
         </div>
       </header>
 
@@ -119,7 +155,7 @@ const DashboardPage = () => {
             <li><FaIcons /> Icons</li>
             <li><FaMap /> Map</li>
             <li><FaBell /> Notifications</li>
-            <li><FaUser /> User Profile</li>
+            <li>User Profile</li> {/* Removed FaUser */}
             <li><FaTable /> Table List</li>
             <li><FaFont /> Typography</li>
             <li><FaLifeRing /> RTL Support</li>

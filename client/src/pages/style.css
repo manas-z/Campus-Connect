@@ -30,44 +30,21 @@ body {
     color: #ffffff; /* Active link text color */
 }
 
-.dropdown {
-    position: relative;
+.navbar-buttons {
+    display: flex;
+    gap: 10px; /* Space between buttons */
 }
 
-.dropdown .dropdown-menu {
-    display: none;  /* Hide dropdown by default */
-    position: absolute;
-    top: 100%;  /* Align dropdown menu below the button */
-    left: 0;
-    margin-top: 0.5rem;
-    background-color: #1f2136;  /* Dropdown background color */
-    border: none;
-    border-radius: 5px;
-    z-index: 1000;
-    min-width: 100%;  /* Ensure the dropdown matches the button width */
-    visibility: hidden; /* Ensure the dropdown is hidden initially */
-    opacity: 0;
-    transition: opacity 0.3s ease, visibility 0.3s ease; /* Smooth transition for visibility and opacity */
-}
-
-.dropdown:hover .dropdown-menu,
-.dropdown-menu:hover {
-    display: block;  /* Keep dropdown open when hovering over the button or menu */
-    visibility: visible;
-    opacity: 1; /* Make the dropdown fully visible */
-}
-
-.dropdown-item {
-    color: #ffffff;
-}
-
-.dropdown-item:hover {
-    background-color: #1665d8;
-}
-
-.btn-primary {
+.btn-primary,.btn-secondary {
     background-color: #1665d8;
     border-color: #1665d8;
+}
+
+
+
+.btn-secondary:hover {
+    background-color: #f8f8f2;
+    color: #181c32;
 }
 
 .display-4 {

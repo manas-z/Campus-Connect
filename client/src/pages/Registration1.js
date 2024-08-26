@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import './style.css';
@@ -50,7 +50,7 @@ const Registration1 = () => {
       {/* Navbar */}
       <nav className="navbar navbar-expand-lg fixed-top">
         <div className="container">
-          <a className="navbar-brand" href="#container">Campus Connect</a>
+          <a className="navbar-brand" href="/">Campus Connect</a>
           <button
             className="navbar-toggler"
             type="button"
@@ -65,29 +65,25 @@ const Registration1 = () => {
           <div className="collapse navbar-collapse" id="navbarNav">
             <ul className="nav nav-pills mx-auto">
               <li className="nav-item">
-                <a className="nav-link active" aria-current="page" href="/">Home</a>
+                <Link className="nav-link" to="/">Home</Link>
               </li>
               <li className="nav-item">
-                <a className="nav-link" href="/#footer">Features</a>
+                <Link className="nav-link" to="/#footer">Features</Link>
               </li>
               <li className="nav-item">
-                <a className="nav-link" href="#">Contact</a>
+                <Link className="nav-link" to="#">Contact</Link>
               </li>
               <li className="nav-item">
-                <a className="nav-link" href="#">FAQ</a>
+                <Link className="nav-link" to="#">FAQ</Link>
               </li>
             </ul>
-            <div className="header-right">
-              <div className="dropdown">
-                <a className="btn btn-primary ml-2 dropdown-toggle" href="/registration1">
-                  Register Now
-                </a>
-                <ul className="dropdown-menu">
-                  <li>
-                    <a className="dropdown-item" href="/login">Login</a>
-                  </li>
-                </ul>
-              </div>
+            <div className="navbar-buttons">
+              <Link className="btn btn-primary ml-2" to="/registration1">
+                Register Now
+              </Link>
+              <Link className="btn btn-secondary ml-2" to="/login">
+                Login
+              </Link>
             </div>
           </div>
         </div>

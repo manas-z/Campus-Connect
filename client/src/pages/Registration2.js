@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import './style.css'; // Assuming you have the same CSS file
+import './style.css';
 
 const Registration2 = () => {
   const navigate = useNavigate();
@@ -62,7 +62,7 @@ const Registration2 = () => {
       {/* Navbar */}
       <nav className="navbar navbar-expand-lg fixed-top">
         <div className="container">
-          <Link className="navbar-brand" to="#container">Campus Connect</Link>
+          <Link className="navbar-brand" to="/">Campus Connect</Link>
           <button
             className="navbar-toggler"
             type="button"
@@ -77,10 +77,10 @@ const Registration2 = () => {
           <div className="collapse navbar-collapse" id="navbarNav">
             <ul className="nav nav-pills mx-auto">
               <li className="nav-item">
-                <Link className="nav-link active" aria-current="page" to="/">Home</Link>
+                <Link className="nav-link" to="/">Home</Link>
               </li>
               <li className="nav-item">
-                <Link className="nav-link" to="#footer">Features</Link>
+                <Link className="nav-link" to="/#footer">Features</Link>
               </li>
               <li className="nav-item">
                 <Link className="nav-link" to="#">Contact</Link>
@@ -89,17 +89,13 @@ const Registration2 = () => {
                 <Link className="nav-link" to="#">FAQ</Link>
               </li>
             </ul>
-            <div className="header-right">
-              <div className="dropdown">
-                <Link className="btn btn-primary ml-2 dropdown-toggle" to="/registration1">
-                  Register Now
-                </Link>
-                <ul className="dropdown-menu">
-                  <li>
-                    <Link className="dropdown-item" to="/login">Login</Link>
-                  </li>
-                </ul>
-              </div>
+            <div className="navbar-buttons">
+              <Link className="btn btn-primary ml-2" to="/registration1">
+                Register Now
+              </Link>
+              <Link className="btn btn-secondary ml-2" to="/login">
+                Login
+              </Link>
             </div>
           </div>
         </div>

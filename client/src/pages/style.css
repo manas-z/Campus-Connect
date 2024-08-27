@@ -1,8 +1,9 @@
 /* style.css */
 body {
     font-family: 'Poppins', sans-serif;
-    background-color: #181c32; /* Match background color to the dashboard */
+    background-color: #181c32;
     color: #f8f8f2;
+    transition: background-color 0.5s ease-in-out; /* Smooth background transition */
 }
 
 .subheadline {
@@ -12,56 +13,68 @@ body {
 }
 
 .navbar {
-    background-color: #181c32 !important; /* Dark navbar background */
+    background-color: #181c32 !important;
+    transition: all 0.3s ease-in-out; /* Smooth navbar transition */
 }
 
 .navbar-brand {
-    color: #ffffff; /* White text for brand */
+    color: #ffffff;
     font-size: xx-large;
 }
 
 .nav-pills .nav-link {
-    color: #ffffff; /* White text for nav links */
+    color: #ffffff;
     margin-right: 10px;
+    transition: color 0.3s ease-in-out, background-color 0.3s ease-in-out;
 }
 
 .nav-pills .nav-link.active {
-    background-color: #1665d8; /* Active link background color */
-    color: #ffffff; /* Active link text color */
+    background-color: #1665d8;
+    color: #ffffff;
 }
 
 .navbar-buttons {
     display: flex;
-    gap: 10px; /* Space between buttons */
+    gap: 10px;
 }
 
-.btn-primary,.btn-secondary {
+.btn-primary, .btn-secondary {
     background-color: #1665d8;
     border-color: #1665d8;
+    transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out;
 }
-
-
 
 .btn-secondary:hover {
     background-color: #f8f8f2;
     color: #181c32;
 }
 
+.btn-primary:hover {
+    background-color: #f8f8f2;
+    color: #181c32;
+}
+
 .display-4 {
-    color: #ffffff; /* Headline color */
+    color: #ffffff;
+    animation: fadeIn 2s ease-in-out;
 }
 
 .card {
-    background-color: #1f2136; /* Card background color */
+    background-color: #1f2136;
     border: none;
+    transition: transform 0.3s ease-in-out;
+}
+
+.card:hover {
+    transform: scale(1.05);
 }
 
 .card-title {
-    color: #ffffff; /* Card title color */
+    color: #ffffff;
 }
 
 .card-text {
-    color: #cfd8dc; /* Card text color */
+    color: #cfd8dc;
 }
 
 .text-light {
@@ -74,4 +87,59 @@ body {
 
 #footer {
     color: #cfd8dc;
+    padding: 20px 0;
+}
+
+.section-title {
+    font-size: 2.5rem;
+    color: #ffffff;
+    margin-bottom: 20px;
+}
+
+.section-subtitle {
+    color: #cfd8dc;
+}
+
+.features-section, .contact-section, .faq-section {
+    padding: 50px 0;
+}
+
+.contact-form .form-control {
+    border-radius: 5px;
+    background-color: #1f2136;
+    color: #ffffff;
+    border: none;
+}
+
+.accordion-button {
+    background-color: #1f2136;
+    color: #ffffff;
+}
+
+.accordion-button:focus {
+    box-shadow: none;
+    border-color: #1665d8;
+}
+
+.accordion-item {
+    border: none;
+}
+
+.accordion-body {
+    background-color: #181c32;
+    color: #cfd8dc;
+}
+
+.animated-image {
+    animation: slideIn 1.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+    0% { opacity: 0; }
+    100% { opacity: 1; }
+}
+
+@keyframes slideIn {
+    0% { transform: translateX(100%); opacity: 0; }
+    100% { transform: translateX(0); opacity: 1; }
 }

@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Line, Bar } from 'react-chartjs-2';
+import { Link } from 'react-router-dom';
+
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -152,7 +154,7 @@ const DashboardPage = () => {
           <h2>Creative Tim</h2>
           <ul>
             <li><FaTachometerAlt /> Dashboard</li>
-            <li><FaIcons /> Icons</li>
+            <li><Link classname="" to="/home"> Home</Link></li>
             <li><FaMap /> Map</li>
             <li><FaBell /> Notifications</li>
             <li>User Profile</li> {/* Removed FaUser */}

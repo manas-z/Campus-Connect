@@ -5,6 +5,7 @@ import Registration2 from './pages/Registration2';
 import Login from './pages/Login';
 import Test from './pages/Test';
 import DashboardPage from './pages/DashboardPage';
+import ChatForum from './pages/ChatForum';
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/test" element={<Test />} />
         <Route path="/dashboardpage" element={<DashboardPage />} />
+        <Route path="/home" element={<ChatForum />} />
         {/* Add other routes here */}
       </Routes>
     </Router>

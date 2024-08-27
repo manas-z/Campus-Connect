@@ -1,0 +1,118 @@
+.chat-forum {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  .new-post {
+    margin-bottom: 40px;
+  }
+  
+  .new-post input,
+  .new-post textarea {
+    width: 100%;
+    padding: 10px;
+    margin: 5px 0;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+  }
+  
+  .new-post button {
+    display: block;
+    margin: 10px auto 0;
+    padding: 10px 15px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  
+  .new-post button:hover {
+    background-color: #0056b3;
+  }
+  
+  ul {
+    list-style-type: none; /* Remove default list styling */
+    padding: 0; /* Remove default padding */
+  }
+  
+  .post {
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    margin-bottom: 15px;
+    background-color: white;
+  }
+  
+  .profile {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  
+  .profile-logo {
+    width: 50px; /* Adjust size as needed */
+    height: 50px; /* Adjust size as needed */
+    border-radius: 50%; /* Make it circular */
+    margin-right: 15px;
+  }
+  
+  .profile-info {
+    flex-grow: 1;
+  }
+  
+  .connect-button {
+    padding: 8px 12px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  
+  .connect-button:hover {
+    background-color: #0056b3;
+  }
+  
+  .post h3 {
+    margin-top: 0;
+  }
+  
+  .post-buttons {
+    margin-top: 10px;
+  }
+  
+  .post-buttons button {
+    margin-right: 10px;
+    padding: 5px 10px;
+    background-color: #ff9696;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  
+  .post-buttons button:hover {
+    background-color: #ff9393;
+  }
+  
+  .like-button {
+    background-color: #28a745; 
+    color: white;
+  }
+  
+  .like-button:hover {
+    background-color: #218838; 
+  }
+  
+  .comment-button {
+    background-color: #17a2b8; 
+    color: white;
+  }
+  
+  .comment-button:hover {
+    background-color: #138496; 
+  }

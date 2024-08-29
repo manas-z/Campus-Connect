@@ -117,27 +117,7 @@ body {
   color: white;
 }
 
-.performance, .stats {
-  margin-bottom: 20px;
-}
 
-.performance h3 {
-  margin-bottom: 10px;
-  color: #ffffff;
-}
-
-.stats {
-  display: flex;
-  justify-content: space-between;
-}
-
-.stats .box {
-  width: 30%;
-  background-color: #1f2136; /* Background color for the stat cards */
-  padding: 20px;
-  border-radius: 8px;
-  color: #ffffff;
-}
 
 /* Dashboard.css */
 .user-search {
@@ -192,4 +172,8 @@ body {
 
 .dropdown-item:hover {
   background-color: #333;
+}
+
+.link{
+  color: #f8f8f2;
 }

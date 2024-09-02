@@ -1,27 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { FaTachometerAlt, FaMap, FaBell, FaTable, FaFont, FaLifeRing, FaSearch } from 'react-icons/fa';
+import { FaSearch } from 'react-icons/fa';
 import './ChatForum.css';
 import './Dashboard.css'; // Import Dashboard styles for consistency
 
-const ChatForum = () => {
-  const [posts, setPosts] = useState([
-    {
-      id: 1,
-      user: {
-        name: 'Karisma',
-        year: '2nd',
-        profileLogo: 'profile-url',
-      },
-      title: 'What is BDT',
-      content: 'Big Data Technologies. But that doesn’t make sense so let’s simplify the things ...',
-      likes: 0,
-      liked: false,
-      comments: [],
-    },
-    // Add more posts here if needed
-  ]);
+// Function to generate unique IDs
+const generateUniqueId = () => '_' + Math.random().toString(36).substr(2, 9);
 
+const ChatForum = () => {
+  const [posts, setPosts] = useState([]);
   const [newPostTitle, setNewPostTitle] = useState('');
   const [newPostContent, setNewPostContent] = useState('');
   const [newComment, setNewComment] = useState('');
@@ -50,7 +37,22 @@ const ChatForum = () => {
       }
     };
 
+    const fetchPosts = async () => {
+      try {
+        const response = await fetch('http://localhost:5000/posts');
+        const data = await response.json();
+        if (response.ok) {
+          setPosts(data);
+        } else {
+          console.error(data.error);
+        }
+      } catch (err) {
+        console.error('Error fetching posts:', err);
+      }
+    };
+
     fetchUserData();
+    fetchPosts();
   }, []);
 
   const toggleSearch = () => {
@@ -61,100 +63,136 @@ const ChatForum = () => {
     setShowDropdown(!showDropdown);
   };
 
-  const handleAddPost = () => {
+  const handleAddPost = async () => {
     if (newPostTitle.trim() && newPostContent.trim()) {
-      const newPost = {
-        id: posts.length + 1,
+      const post = {
+        title: newPostTitle,
         user: {
           name: userName || 'Anonymous',
           year: '1st',
-          profileLogo: 'your-profile-logo-url',
+          profileLogo: profileImage || 'default-profile-logo-url',
         },
-        title: newPostTitle,
         content: newPostContent,
-        likes: 0,
-        liked: false,
-        comments: [],
+        comments: [], // Initialize comments as an empty array
       };
-      setPosts([...posts, newPost]);
-      setNewPostTitle('');
-      setNewPostContent('');
-    }
-  };
 
-  const handleLike = (postId) => {
-    setPosts(posts.map(post => 
-      post.id === postId ? { ...post, liked: !post.liked, likes: post.liked ? post.likes - 1 : post.likes + 1 } : post
-    ));
-  };
-
-  const handleAddComment = (postId) => {
-    if (newComment.trim()) {
-      const updatedPosts = posts.map(post => {
-        if (post.id === postId) {
-          const addReply = (comments, parentId) => {
-            return comments.map(comment => {
-              if (comment.id === parentId) {
-                return {
-                  ...comment,
-                  replies: [
-                    ...comment.replies,
-                    {
-                      id: comment.replies.length + 1,
-                      user: userName || 'Anonymous',
-                      text: newComment,
-                      replies: [],
-                    },
-                  ],
-                };
-              } else if (comment.replies.length > 0) {
-                return {
-                  ...comment,
-                  replies: addReply(comment.replies, parentId),
-                };
-              }
-              return comment;
-            });
-          };
-
-          if (replyToCommentId === null) {
-            // Adding a new top-level comment
-            post.comments.push({
-              id: post.comments.length + 1,
-              user: userName || 'Anonymous',
-              text: newComment,
-              replies: [],
-            });
-          } else {
-            // Adding a reply to an existing comment
-            post.comments = addReply(post.comments, replyToCommentId);
-          }
+      try {
+        const response = await fetch('http://localhost:5000/posts', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(post),
+        });
+        const newPost = await response.json();
+        if (response.ok) {
+          setPosts([...posts, newPost]);
+          setNewPostTitle('');
+          setNewPostContent('');
+        } else {
+          console.error(newPost.error);
         }
-        return post;
-      });
-
-      setPosts(updatedPosts);
-      setNewComment('');
-      setReplyToCommentId(null);  // Reset reply mode after adding the reply
+      } catch (err) {
+        console.error('Error adding post:', err);
+      }
     }
   };
 
-  const renderComments = (comments, postId) => {
+  const handleLike = async (postId) => {
+    const updatedPosts = posts.map(post => 
+      post._id === postId ? { ...post, liked: !post.liked, likes: post.liked ? post.likes - 1 : post.likes + 1 } : post
+    );
+
+    setPosts(updatedPosts);
+
+    try {
+      await fetch(`http://localhost:5000/posts/${postId}/like`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ liked: updatedPosts.find(post => post._id === postId).liked }),
+      });
+    } catch (err) {
+      console.error('Error updating like:', err);
+    }
+  };
+
+  const handleAddComment = async (postId) => {
+    if (newComment.trim()) {
+      try {
+        const response = await fetch(`http://localhost:5000/posts/${postId}/comments`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            user: userName || 'Anonymous',
+            text: newComment,
+          }),
+        });
+
+        const newCommentResponse = await response.json();
+        if (response.ok) {
+          const updatedPosts = posts.map(post => {
+            if (post._id === postId) {
+              if (replyToCommentId === null) {
+                post.comments.push(newCommentResponse);
+              } else {
+                const addReply = (comments, parentId) => {
+                  return comments.map(comment => {
+                    if (comment._id === parentId) {
+                      return {
+                        ...comment,
+                        replies: [
+                          ...comment.replies,
+                          newCommentResponse,
+                        ],
+                      };
+                    } else if (comment.replies && comment.replies.length > 0) {
+                      return {
+                        ...comment,
+                        replies: addReply(comment.replies, parentId),
+                      };
+                    }
+                    return comment;
+                  });
+                };
+                post.comments = addReply(post.comments, replyToCommentId);
+              }
+            }
+            return post;
+          });
+
+          setPosts(updatedPosts);
+          setNewComment('');
+          setReplyToCommentId(null);  // Reset reply mode after adding the reply
+        } else {
+          console.error(newCommentResponse.error);
+        }
+      } catch (err) {
+        console.error('Error adding comment:', err);
+      }
+    }
+  };
+
+  const renderComments = (comments) => {
     return comments.map((comment) => (
-      <div key={comment.id} className="comment">
+      <div key={comment._id} className="comment">
         <div className="comment-header">
           <strong>{comment.user}</strong>
         </div>
         <p>{comment.text}</p>
         <button 
           className="reply-button"
-          onClick={() => setReplyToCommentId(comment.id)}
+          onClick={() => setReplyToCommentId(comment._id)}
         >
           Reply
         </button>
-        {comment.replies.length > 0 && (
+        {/* Ensure replies exist before accessing them */}
+        {comment.replies && comment.replies.length > 0 && (
           <div className="replies">
-            {renderComments(comment.replies, postId)}
+            {renderComments(comment.replies)}
           </div>
         )}
       </div>
@@ -188,9 +226,7 @@ const ChatForum = () => {
           <h2>Navigation</h2>
           <ul>
             <li><Link className='link' to='/dashboardpage'>Dashboard</Link></li>
-            <li><Link className='link' to="/chatforum"> ChatForum</Link></li>
-
-  
+            <li><Link className='link' to="/chatforum">ChatForum</Link></li>
           </ul>
         </div>
 
@@ -213,7 +249,7 @@ const ChatForum = () => {
 
           <ul className="posts-list">
             {posts.map((post) => (
-              <li key={post.id} className="post">
+              <li key={post._id} className="post">
                 <div className="post-header">
                   <div className="profile">
                     <img src={post.user.profileLogo} alt="Profile" className="profile-logo" />
@@ -237,20 +273,20 @@ const ChatForum = () => {
                   <div className="action-buttons">
                     <button 
                       className={`like-button ${post.liked ? 'liked' : ''}`} 
-                      onClick={() => handleLike(post.id)}
+                      onClick={() => handleLike(post._id)}
                     >
                       Like {post.likes}
                     </button>
                     <button 
                       className="comment-button" 
-                      onClick={() => handleAddComment(post.id)}
+                      onClick={() => handleAddComment(post._id)}
                     >
                       {replyToCommentId ? "Reply" : "Comment"}
                     </button>
                   </div>
                 </div>
                 <div className="comments-section">
-                  {renderComments(post.comments, post.id)}
+                  {renderComments(post.comments)}
                 </div>
               </li>
             ))}

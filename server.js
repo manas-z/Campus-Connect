@@ -6,6 +6,7 @@ const jwt = require('jsonwebtoken');
 const multer = require('multer');
 const User = require('./models/User'); // User model
 const UserProfile = require('./models/UserProfile'); // UserProfile model
+const Post = require('./models/Post'); // Post model
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -19,7 +20,7 @@ app.use(express.json());
 const upload = multer({ dest: 'uploads/' }); // Adjust as needed
 
 // MongoDB Connection
-mongoose.connect('mongodb://localhost:27017/University', {
+mongoose.connect('mongodb+srv://ap:bangtan%40123@cluster0.kzhz3.mongodb.net/chatForum?retryWrites=true&w=majority', {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 }).then(() => {
@@ -143,6 +144,88 @@ app.get('/user-info', async (req, res) => {
     res.status(200).json(userProfile);
   } catch (err) {
     console.error(err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// Create a new post
+app.post('/posts', async (req, res) => {
+  const { title, user, content } = req.body;
+
+  try {
+    const newPost = new Post({ title, user, content });
+    const savedPost = await newPost.save();
+    res.status(201).json(savedPost);
+  } catch (err) {
+    console.error('Error creating post:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// Get all posts
+app.get('/posts', async (req, res) => {
+  try {
+    const posts = await Post.find();
+    res.status(200).json(posts);
+  } catch (err) {
+    console.error('Error fetching posts:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// Get posts by title
+app.get('/posts/:title', async (req, res) => {
+  const { title } = req.params;
+  try {
+    const posts = await Post.find({ title });
+    res.status(200).json(posts);
+  } catch (err) {
+    console.error('Error fetching posts:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// Create a new comment on a post
+app.post('/posts/:postId/comments', async (req, res) => {
+  const { postId } = req.params;
+  const { user, text } = req.body;
+
+  try {
+    const post = await Post.findById(postId);
+    if (!post) {
+      return res.status(404).json({ error: 'Post not found' });
+    }
+
+    const newComment = {
+      _id: '_' + Math.random().toString(36).substr(2, 9),
+      user,
+      text,
+      replies: []
+    };
+
+    post.comments.push(newComment);
+    await post.save();
+
+    res.status(201).json(newComment);
+  } catch (err) {
+    console.error('Error adding comment:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// Get comments for a specific post
+app.get('/posts/:postId/comments', async (req, res) => {
+  const { postId } = req.params;
+
+  try {
+    const post = await Post.findById(postId).populate('comments.replies');
+    if (!post) {
+      return res.status(404).json({ error: 'Post not found' });
+    }
+
+    res.status(200).json(post.comments);
+  } catch (err) {
+    console.error('Error fetching comments:', err);
     res.status(500).json({ error: 'Server error' });
   }
 });

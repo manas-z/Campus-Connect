@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { FaSearch } from 'react-icons/fa';
+import axios from 'axios';
+import SearchBar from './SearchBar';
 import Comment from './Comment';
 import useNode from '../hooks/useNode';  // Import the custom hook
 import './ChatForum.css';
@@ -8,6 +10,7 @@ import './Dashboard.css';
 
 const ChatForum = () => {
   const [posts, setPosts] = useState([]);
+  const [searchResults, setSearchResults] = useState([]);
   const [newPostTitle, setNewPostTitle] = useState('');
   const [newPostContent, setNewPostContent] = useState('');
   const [userName, setUserName] = useState('');
@@ -51,9 +54,14 @@ const ChatForum = () => {
       }
     };
 
+    
     fetchUserData();
     fetchPosts();
   }, []);
+  44
+  const handleSearchResults = (results) => {
+    setSearchResults(results);
+    }
 
   const handleAddPost = async () => {
     if (newPostTitle.trim() && newPostContent.trim()) {
@@ -117,7 +125,8 @@ const ChatForum = () => {
       <header className="header">
         <div className="logo">DASHBOARD</div>
         <div className="user-search">
-          {showSearch && <input type="text" className="search-bar" placeholder="Search..." />}
+          {/* SearchBar Component */}
+          {showSearch && <SearchBar onSearchResults={handleSearchResults} />}
           <FaSearch className="icon" onClick={toggleSearch} />
           <div className="user-profile" onClick={toggleDropdown}>
             <img src={profileImage} alt="Profile" className="profile-image" />
@@ -158,7 +167,8 @@ const ChatForum = () => {
           </div>
 
           <ul className="posts-list">
-            {posts.map((post) => (
+            {/* Display posts based on search results */}
+            {(searchResults.length > 0 ? searchResults : posts).map((post) => (
               <li key={post._id} className="post">
                 <div className="post-header">
                   <div className="profile">

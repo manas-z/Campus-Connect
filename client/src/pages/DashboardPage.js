@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Line, Bar } from 'react-chartjs-2';
 import { Link } from 'react-router-dom';
+import SearchBar from './SearchBar';  // Import the SearchBar component
 
 import {
   Chart as ChartJS,
@@ -41,6 +42,7 @@ const DashboardPage = () => {
   const [userName, setUserName] = useState('');
   const [profileImage, setProfileImage] = useState('');
   const [showDropdown, setShowDropdown] = useState(false);
+  const [searchResults, setSearchResults] = useState([]); // State for search results
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -73,14 +75,20 @@ const DashboardPage = () => {
     setShowDropdown(!showDropdown);
   };
 
+  // Function to handle search results from the SearchBar component
+  const handleSearchResults = (results) => {
+    setSearchResults(results);
+  };
 
   return (
     <div className="dashboard-page">
       <header className="header">
         <div className="logo">DASHBOARD</div>
         <div className="user-search">
-          {showSearch && <input type="text" className="search-bar" placeholder="Search..." />}
+          {/* Display SearchBar component */}
+          {showSearch && <SearchBar onSearchResults={handleSearchResults} />}
           <FaSearch className="icon" onClick={toggleSearch} />
+          
           
           <div className="user-profile" onClick={toggleDropdown}>
             <img src={profileImage} alt="Profile" className="profile-image" />
@@ -100,11 +108,26 @@ const DashboardPage = () => {
           <h2>Navigation</h2>
           <ul>
             <li><Link className='link' to='/dashboardpage'>Dashboard</Link></li>
-            <li><Link className='link' to='/chatforum'> Chat Forum</Link></li>
-
+            <li><Link className='link' to='/chatforum'>Chat Forum</Link></li>
           </ul>
         </div>
 
+        {/* Main Content Area */}
+        <div className="main-content">
+          {/* Display search results if available */}
+          {searchResults.length > 0 && (
+            <div className="search-results">
+              <h3>Search Results:</h3>
+              {searchResults.map((post) => (
+                <div key={post._id} className="post">
+                  <h4>{post.title}</h4>
+                  <p>{post.content}</p>
+                  <small>By {post.user.name}</small>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

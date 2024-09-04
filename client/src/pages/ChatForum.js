@@ -1,22 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { FaSearch } from 'react-icons/fa';
+import Comment from './Comment';
+import useNode from '../hooks/useNode';  // Import the custom hook
 import './ChatForum.css';
-import './Dashboard.css'; // Import Dashboard styles for consistency
-
-// Function to generate unique IDs
-const generateUniqueId = () => '_' + Math.random().toString(36).substr(2, 9);
+import './Dashboard.css';
 
 const ChatForum = () => {
   const [posts, setPosts] = useState([]);
   const [newPostTitle, setNewPostTitle] = useState('');
   const [newPostContent, setNewPostContent] = useState('');
-  const [newComment, setNewComment] = useState('');
-  const [replyToCommentId, setReplyToCommentId] = useState(null);
-  const [showSearch, setShowSearch] = useState(false);
   const [userName, setUserName] = useState('');
   const [profileImage, setProfileImage] = useState('');
+  const [showSearch, setShowSearch] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
+  const [commentsData, setCommentsData] = useState({ id: 1, items: [] });
+
+  const { insertNode, editNode, deleteNode } = useNode();
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -55,14 +55,6 @@ const ChatForum = () => {
     fetchPosts();
   }, []);
 
-  const toggleSearch = () => {
-    setShowSearch(!showSearch);
-  };
-
-  const toggleDropdown = () => {
-    setShowDropdown(!showDropdown);
-  };
-
   const handleAddPost = async () => {
     if (newPostTitle.trim() && newPostContent.trim()) {
       const post = {
@@ -73,7 +65,6 @@ const ChatForum = () => {
           profileLogo: profileImage || 'default-profile-logo-url',
         },
         content: newPostContent,
-        comments: [], // Initialize comments as an empty array
       };
 
       try {
@@ -98,110 +89,31 @@ const ChatForum = () => {
     }
   };
 
-  const handleLike = async (postId) => {
-    const updatedPosts = posts.map(post => 
-      post._id === postId ? { ...post, liked: !post.liked, likes: post.liked ? post.likes - 1 : post.likes + 1 } : post
-    );
-
-    setPosts(updatedPosts);
-
-    try {
-      await fetch(`http://localhost:5000/posts/${postId}/like`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ liked: updatedPosts.find(post => post._id === postId).liked }),
-      });
-    } catch (err) {
-      console.error('Error updating like:', err);
-    }
+  const handleInsertNode = (commentId, text) => {
+    const updatedTree = insertNode(commentsData, commentId, text);
+    setCommentsData(updatedTree);
   };
 
-  const handleAddComment = async (postId) => {
-    if (newComment.trim()) {
-      try {
-        const response = await fetch(`http://localhost:5000/posts/${postId}/comments`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            user: userName || 'Anonymous',
-            text: newComment,
-          }),
-        });
-
-        const newCommentResponse = await response.json();
-        if (response.ok) {
-          const updatedPosts = posts.map(post => {
-            if (post._id === postId) {
-              if (replyToCommentId === null) {
-                post.comments.push(newCommentResponse);
-              } else {
-                const addReply = (comments, parentId) => {
-                  return comments.map(comment => {
-                    if (comment._id === parentId) {
-                      return {
-                        ...comment,
-                        replies: [
-                          ...comment.replies,
-                          newCommentResponse,
-                        ],
-                      };
-                    } else if (comment.replies && comment.replies.length > 0) {
-                      return {
-                        ...comment,
-                        replies: addReply(comment.replies, parentId),
-                      };
-                    }
-                    return comment;
-                  });
-                };
-                post.comments = addReply(post.comments, replyToCommentId);
-              }
-            }
-            return post;
-          });
-
-          setPosts(updatedPosts);
-          setNewComment('');
-          setReplyToCommentId(null);  // Reset reply mode after adding the reply
-        } else {
-          console.error(newCommentResponse.error);
-        }
-      } catch (err) {
-        console.error('Error adding comment:', err);
-      }
-    }
+  const handleEditNode = (commentId, text) => {
+    const updatedTree = editNode(commentsData, commentId, text);
+    setCommentsData(updatedTree);
   };
 
-  const renderComments = (comments) => {
-    return comments.map((comment) => (
-      <div key={comment._id} className="comment">
-        <div className="comment-header">
-          <strong>{comment.user}</strong>
-        </div>
-        <p>{comment.text}</p>
-        <button 
-          className="reply-button"
-          onClick={() => setReplyToCommentId(comment._id)}
-        >
-          Reply
-        </button>
-        {/* Ensure replies exist before accessing them */}
-        {comment.replies && comment.replies.length > 0 && (
-          <div className="replies">
-            {renderComments(comment.replies)}
-          </div>
-        )}
-      </div>
-    ));
+  const handleDeleteNode = (commentId) => {
+    const updatedTree = deleteNode(commentsData, commentId);
+    setCommentsData(updatedTree);
+  };
+
+  const toggleSearch = () => {
+    setShowSearch(!showSearch);
+  };
+
+  const toggleDropdown = () => {
+    setShowDropdown(!showDropdown);
   };
 
   return (
     <div className="chat-forum-page">
-      {/* Header with Navbar */}
       <header className="header">
         <div className="logo">DASHBOARD</div>
         <div className="user-search">
@@ -220,7 +132,6 @@ const ChatForum = () => {
         </div>
       </header>
 
-      {/* Sidebar */}
       <div className="content">
         <div className="sidebar">
           <h2>Navigation</h2>
@@ -230,7 +141,6 @@ const ChatForum = () => {
           </ul>
         </div>
 
-        {/* Main Content */}
         <div className="main-content">
           <div className="new-post">
             <input
@@ -263,30 +173,14 @@ const ChatForum = () => {
                   <h3>{post.title}</h3>
                   <p>{post.content}</p>
                 </div>
-                <div className="post-actions">
-                  <textarea
-                    className="comment-input"
-                    placeholder={replyToCommentId ? "Reply to comment" : "Add a comment"}
-                    value={newComment}
-                    onChange={(e) => setNewComment(e.target.value)}
-                  />
-                  <div className="action-buttons">
-                    <button 
-                      className={`like-button ${post.liked ? 'liked' : ''}`} 
-                      onClick={() => handleLike(post._id)}
-                    >
-                      Like {post.likes}
-                    </button>
-                    <button 
-                      className="comment-button" 
-                      onClick={() => handleAddComment(post._id)}
-                    >
-                      {replyToCommentId ? "Reply" : "Comment"}
-                    </button>
-                  </div>
-                </div>
+
                 <div className="comments-section">
-                  {renderComments(post.comments)}
+                  <Comment
+                    handleInsertNode={handleInsertNode}
+                    handleEditNode={handleEditNode}
+                    handleDeleteNode={handleDeleteNode}
+                    comment={commentsData}
+                  />
                 </div>
               </li>
             ))}

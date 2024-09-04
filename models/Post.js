@@ -1,22 +1,18 @@
 const mongoose = require('mongoose');
 
-const CommentSchema = new mongoose.Schema({
-  _id: mongoose.Schema.Types.ObjectId,
-  user: String,
-  text: String,
-  replies: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Comment' }] // Array of ObjectIds referring to the replies
+const commentSchema = new mongoose.Schema({
+  user: { type: String, required: true },
+  text: { type: String, required: true },
+  replies: [this], // This allows for nested comments
+  createdAt: { type: Date, default: Date.now },
 });
 
-const PostSchema = new mongoose.Schema({
-  title: String,
-  user: {
-    name: String,
-    profileLogo: String
-  },
-  content: String,
-  comments: [CommentSchema] // Array of nested comments
+const postSchema = new mongoose.Schema({
+  title: { type: String, required: true },
+  user: { type: Object, required: true },
+  content: { type: String, required: true },
+  comments: [commentSchema], // Use the comment schema
 });
 
-const Post = mongoose.model('Post', PostSchema);
-
+const Post = mongoose.model('Post', postSchema);
 module.exports = Post;

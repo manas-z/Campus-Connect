@@ -11,7 +11,7 @@ const Test = () => {
 
   return (
     <div>
-      {/* Navbar */}
+      
       <nav className="navbar navbar-expand-lg fixed-top">
         <div className="container">
           <a className="navbar-brand" href="#">Campus Connect</a>
@@ -65,7 +65,7 @@ const Test = () => {
                 </a>
               </li>
             </ul>
-            {/* Register and Login Buttons */}
+            
             <div className="navbar-buttons">
               <Link className="btn btn-primary ml-2" to="/registration1">
                 Register Now

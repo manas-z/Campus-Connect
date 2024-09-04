@@ -35,8 +35,8 @@ const Registration1 = () => {
       const data = await response.json();
       if (response.ok) {
         alert(data.message);
-        localStorage.setItem('userEmail', email); // Store email for Registration2
-        navigate('/registration2'); // Redirect to additional info form
+        localStorage.setItem('userEmail', email); 
+        navigate('/registration2'); 
       } else {
         alert(data.error);
       }
@@ -47,7 +47,7 @@ const Registration1 = () => {
 
   return (
     <div>
-      {/* Navbar */}
+    
       <nav className="navbar navbar-expand-lg fixed-top">
         <div className="container">
           <a className="navbar-brand" href="/">Campus Connect</a>
@@ -89,7 +89,7 @@ const Registration1 = () => {
         </div>
       </nav>
 
-      {/* Main Content */}
+      
       <section className="h-100 h-custom" style={{ backgroundColor: '#181c32', color: '#f8f8f2' }}>
         <div className="container py-5 h-100">
           <div className="row d-flex justify-content-center align-items-center h-100">

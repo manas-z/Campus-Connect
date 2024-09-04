@@ -228,3 +228,59 @@ body {
   padding-left: 10px;
   margin-top: 10px;
 }
+
+/* Add specific styles for collapsible and expandable actions */
+.reply {
+  color: #007bff;
+  cursor: pointer;
+  padding: 0 5px;
+  background-color: transparent;
+  border: none;
+  outline: none;
+  font-size: 14px;
+}
+
+.reply:hover {
+  color: #0056b3;
+}
+
+.reply.comment {
+  display: flex;
+  align-items: center;
+  padding: 5px 10px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.reply.comment:hover {
+  background-color: #0056b3;
+}
+
+/* Style for input and text area */
+.inputContainer__input {
+  width: 100%;
+  padding: 10px;
+  margin: 10px 0;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 14px;
+}
+
+.inputContainer {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.commentContainer {
+  padding: 10px;
+  border-radius: 5px;
+  margin: 10px 0;
+  background-color: #f1f1f1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}

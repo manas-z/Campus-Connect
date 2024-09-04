@@ -52,7 +52,7 @@ const DashboardPage = () => {
         const data = await response.json();
         if (response.ok) {
           setUserName(data.name);
-          setProfileImage(data.profileImage); // Assuming server returns image URL
+          setProfileImage(data.profileImage); 
           alert(`Welcome, ${data.name}!`);
         } else {
           console.error(data.error);
@@ -81,7 +81,7 @@ const DashboardPage = () => {
         <div className="user-search">
           {showSearch && <input type="text" className="search-bar" placeholder="Search..." />}
           <FaSearch className="icon" onClick={toggleSearch} />
-          {/* User Profile Section */}
+          
           <div className="user-profile" onClick={toggleDropdown}>
             <img src={profileImage} alt="Profile" className="profile-image" />
             <span className="user-name">{userName}</span>

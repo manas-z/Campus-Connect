@@ -48,7 +48,7 @@ const Registration2 = () => {
       const data = await response.json();
       if (response.ok) {
         alert('Sign up process completed successfully!');
-        navigate('/login'); // Redirect to login page
+        navigate('/login');
       } else {
         alert(data.error);
       }
@@ -59,7 +59,7 @@ const Registration2 = () => {
 
   return (
     <div>
-      {/* Navbar */}
+     
       <nav className="navbar navbar-expand-lg fixed-top">
         <div className="container">
           <Link className="navbar-brand" to="/">Campus Connect</Link>
@@ -101,7 +101,7 @@ const Registration2 = () => {
         </div>
       </nav>
 
-      {/* Main Content */}
+
       <section className="h-100 h-custom" style={{ backgroundColor: '#181c32', color: '#f8f8f2' }}>
         <div className="container py-5 h-100">
           <div className="row d-flex justify-content-center align-items-center h-100">

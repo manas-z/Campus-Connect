@@ -185,6 +185,29 @@ app.get('/posts/:title', async (req, res) => {
   }
 });
 
+app.get('/api/search', async (req, res) => {
+  const { query } = req.query;
+  if (!query) {
+    return res.status(400).json({ error: 'Search query is required.' });
+  }
+
+  const searchTerms = query.split(/\s+/); // Split input into words
+
+  try {
+    // Search for posts that contain any of the search terms in their title or content
+    const posts = await Post.find({
+      $or: [
+        { title: { $regex: searchTerms.join('|'), $options: 'i' } },    // Matches any word in the title
+        { content: { $regex: searchTerms.join('|'), $options: 'i' } },  // Matches any word in the content
+      ],
+    });
+    res.json(posts);
+  } catch (err) {
+    console.error('Error searching posts:', err);
+    res.status(500).json({ error: 'Failed to search posts' });
+  }
+});
+
 // Create a new comment on a post
 app.post('/posts/:postId/comments', async (req, res) => {
   const { postId } = req.params;

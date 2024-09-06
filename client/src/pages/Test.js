@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import './style.css';
+import testImage from './Test.png'; // Import the image properly
 
 const Test = () => {
   const [activeSection, setActiveSection] = useState('home');
@@ -11,10 +12,10 @@ const Test = () => {
 
   return (
     <div>
-      
+      {/* Navbar */}
       <nav className="navbar navbar-expand-lg fixed-top">
         <div className="container">
-          <a className="navbar-brand" href="#">Campus Connect</a>
+          <Link className="navbar-brand" to="#">Campus Connect</Link>
           <button
             className="navbar-toggler"
             type="button"
@@ -31,41 +32,40 @@ const Test = () => {
               <li className="nav-item">
                 <Link
                   className={`nav-link ${activeSection === 'home' ? 'active' : ''}`}
-                  to="#"
+                  to="#home"
                   onClick={() => handleSetActive('home')}
                 >
                   Home
                 </Link>
               </li>
               <li className="nav-item">
-                <a
+                <Link
                   className={`nav-link ${activeSection === 'features' ? 'active' : ''}`}
-                  href="#features"
+                  to="#features"
                   onClick={() => handleSetActive('features')}
                 >
                   Features
-                </a>
+                </Link>
               </li>
               <li className="nav-item">
-                <a
+                <Link
                   className={`nav-link ${activeSection === 'contact' ? 'active' : ''}`}
-                  href="#contact"
+                  to="#contact"
                   onClick={() => handleSetActive('contact')}
                 >
                   Contact
-                </a>
+                </Link>
               </li>
               <li className="nav-item">
-                <a
+                <Link
                   className={`nav-link ${activeSection === 'faq' ? 'active' : ''}`}
-                  href="#faq"
+                  to="#faq"
                   onClick={() => handleSetActive('faq')}
                 >
                   FAQ
-                </a>
+                </Link>
               </li>
             </ul>
-            
             <div className="navbar-buttons">
               <Link className="btn btn-primary ml-2" to="/registration1">
                 Register Now
@@ -93,7 +93,7 @@ const Test = () => {
             <Link to="/registration1" className="btn btn-primary btn-lg mt-4">Register Now</Link>
           </div>
           <div className="col-lg-6 position-relative">
-            <img src="C:\Desktop\Manas\FSD\Campus-Connect\client\src\pages\Test.jpg" className="img-fluid rounded animated-image" alt="Image" />
+            <img src={testImage} className="img-fluid rounded animated-image" alt="Campus Connect" />
           </div>
         </div>
 

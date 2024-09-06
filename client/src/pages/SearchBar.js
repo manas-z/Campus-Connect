@@ -1,34 +1,42 @@
-import React, { useState } from 'react';
-import axios from 'axios';
+import React, { useState, useEffect } from 'react';
+import debounce from 'lodash/debounce';
+import './SearchBar1.css';
 
-const SearchBar = ({ onSearchResults }) => {
+const SearchBar1 = ({ onSearchResults }) => {
   const [query, setQuery] = useState('');
 
-  const handleSearch = async (e) => {
-    e.preventDefault();
-    if (query.trim()) {
-      try {
-        const response = await axios.get(`http://localhost:5000/api/search?query=${query}`);
-        onSearchResults(response.data); // Pass results to parent component
-      } catch (error) {
-        console.error('Error fetching search results:', error);
+  // Fetch search results based on the search term
+  const fetchResults = debounce(async (searchTerm) => {
+    if (!searchTerm) return; // Return early if search term is empty
+
+    try {
+      const response = await fetch(`http://localhost:5000/api/search-users?query=${encodeURIComponent(searchTerm)}`);
+      
+      if (!response.ok) {
+        console.error('Error fetching search results:', response.statusText);
+        return;
       }
+
+      const data = await response.json();
+      onSearchResults(data); // Pass search results to parent component
+    } catch (error) {
+      console.error('Error fetching search results:', error);
     }
-  };
+  }, 300); // 300ms debounce delay to minimize API calls
+
+  // Effect to trigger search when query changes
+  useEffect(() => {
+    fetchResults(query);
+  }, [query]);
 
   return (
-    <div className="search-bar-container">
-      <form onSubmit={handleSearch}>
-        <input
-          type="text"
-          placeholder="Search for posts..."
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-        />
-        <button type="submit">Search</button>
-      </form>
-    </div>
+    <input
+      type="text"
+      value={query}
+      onChange={(e) => setQuery(e.target.value)}
+      placeholder="Search users..."
+    />
   );
 };
 
-export default SearchBar;
+export default SearchBar1;

@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const userProfileSchema = new mongoose.Schema({
-  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }, // Reference to the User model
+  _id: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }, // Use _id for referencing the User model
   name: { type: String, required: true },
   age: { type: Number },
   currentYear: { type: String },
@@ -13,4 +13,8 @@ const userProfileSchema = new mongoose.Schema({
   profileImage: { type: String } // URL or file path to the user's profile image
 });
 
-module.exports = mongoose.model('UserProfile', userProfileSchema);
+// Create a text index on the 'name' field
+userProfileSchema.index({ name: 'text' });
+
+const UserProfile = mongoose.model('UserProfile', userProfileSchema);
+module.exports = UserProfile;

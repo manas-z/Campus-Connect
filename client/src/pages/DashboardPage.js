@@ -104,11 +104,13 @@ const DashboardPage = () => {
       </header>
 
       <div className="content">
+        {/* Sidebar Navigation */}
         <div className="sidebar">
           <h2>Navigation</h2>
           <ul>
             <li><Link className='link' to='/dashboardpage'>Dashboard</Link></li>
             <li><Link className='link' to='/chatforum'>Chat Forum</Link></li>
+            <li><Link className='link' to='/connections'>Connections</Link></li> {/* New Link */}
           </ul>
         </div>
 

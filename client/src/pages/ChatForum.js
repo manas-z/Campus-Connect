@@ -18,6 +18,7 @@ const ChatForum = () => {
   const [showSearch, setShowSearch] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const [commentsData, setCommentsData] = useState({ id: 1, items: [] });
+  const [postComments, setPostComments] = useState({});
 
   const { insertNode, editNode, deleteNode } = useNode();
 
@@ -58,44 +59,48 @@ const ChatForum = () => {
     fetchUserData();
     fetchPosts();
   }, []);
-  44
+  
   const handleSearchResults = (results) => {
     setSearchResults(results);
     }
 
-  const handleAddPost = async () => {
-    if (newPostTitle.trim() && newPostContent.trim()) {
-      const post = {
-        title: newPostTitle,
-        user: {
-          name: userName || 'Anonymous',
-          year: '1st',
-          profileLogo: profileImage || 'default-profile-logo-url',
-        },
-        content: newPostContent,
-      };
-
-      try {
-        const response = await fetch('http://localhost:5000/posts', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
+    const handleAddPost = async () => {
+      if (newPostTitle.trim() && newPostContent.trim()) {
+        const post = {
+          title: newPostTitle,
+          user: {
+            name: userName || 'Anonymous',
+            year: 'None',
+            profileLogo: profileImage || 'default-profile-logo-url',
           },
-          body: JSON.stringify(post),
-        });
-        const newPost = await response.json();
-        if (response.ok) {
-          setPosts([...posts, newPost]);
-          setNewPostTitle('');
-          setNewPostContent('');
-        } else {
-          console.error(newPost.error);
+          content: newPostContent,
+        };
+    
+        try {
+          const response = await fetch('http://localhost:5000/posts', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(post),
+          });
+          const newPost = await response.json();
+          if (response.ok) {
+            // Add new post to the beginning of the posts array
+            setPosts([newPost, ...posts]);
+            setNewPostTitle('');
+            setNewPostContent('');
+          } else {
+            console.error(newPost.error);
+          }
+        } catch (err) {
+          console.error('Error adding post:', err);
         }
-      } catch (err) {
-        console.error('Error adding post:', err);
       }
-    }
-  };
+    };
+    
+
+
 
   const handleInsertNode = (commentId, text) => {
     const updatedTree = insertNode(commentsData, commentId, text);

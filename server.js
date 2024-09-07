@@ -7,7 +7,7 @@ const multer = require('multer');
 
 const User = require('./models/User'); // User model
 const UserProfile = require('./models/UserProfile'); // UserProfile model
-const Post = require('./models/Post'); // Post model
+const { Post, Comment } = require('./models/Post'); // Post model
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -21,7 +21,7 @@ app.use(express.json());
 const upload = multer({ dest: 'uploads/' }); // Adjust as needed
 
 // MongoDB Connection
-mongoose.connect('mongodb+srv://ap:bangtan%40123@cluster0.kzhz3.mongodb.net/chatForum?retryWrites=true&w=majority', {
+mongoose.connect('mongodb+srv://jolvin:jolvin123@cluster0.kzhz3.mongodb.net/chatForum?retryWrites=true&w=majority', {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 })
@@ -149,10 +149,21 @@ app.get('/user-info', async (req, res) => {
 // Create a new post
 app.post('/posts', async (req, res) => {
   const { title, user, content } = req.body;
+  
+  if (!title || !user || !content) {
+    return res.status(400).json({ error: 'Title, user, and content are required' });
+  }
+
   try {
-    const newPost = new Post({ title, user, content, comments: [] });
-    const savedPost = await newPost.save();
-    res.status(201).json(savedPost);
+    // Create a new post with the current date and time
+    const newPost = new Post({
+      title,
+      user,
+      content,
+      createdAt: new Date(), // Explicitly setting the creation date
+    });
+  const savedPost = await newPost.save();
+  res.status(201).json(savedPost);
   } catch (err) {
     console.error('Error creating post:', err);
     res.status(500).json({ error: 'Server error creating post' });
@@ -162,13 +173,15 @@ app.post('/posts', async (req, res) => {
 // Get all posts
 app.get('/posts', async (req, res) => {
   try {
-    const posts = await Post.find();
+    // Fetch posts sorted by creation date in descending order
+    const posts = await Post.find().sort({ createdAt: -1 });
     res.status(200).json(posts);
   } catch (err) {
     console.error('Error fetching posts:', err);
     res.status(500).json({ error: 'Server error fetching posts' });
   }
 });
+
 
 app.get('/api/search', async (req, res) => {
   const { query } = req.query;
@@ -193,10 +206,11 @@ app.get('/api/search', async (req, res) => {
   }
 });
 
-// Create a new comment on a post
+
+// Create a new comment on a post (without nesting)
 app.post('/posts/:postId/comments', async (req, res) => {
   const { postId } = req.params;
-  const { user, text, parentCommentId } = req.body;
+  const { user, text } = req.body;
 
   if (!user || !text) {
     return res.status(400).json({ error: 'User and text are required to add a comment.' });
@@ -211,20 +225,10 @@ app.post('/posts/:postId/comments', async (req, res) => {
     const newComment = {
       user,
       text,
-      replies: [],
       createdAt: new Date(),
     };
 
-    if (parentCommentId) {
-      const parentComment = findCommentById(post.comments, parentCommentId);
-      if (parentComment) {
-        parentComment.replies.push(newComment);
-      } else {
-        return res.status(404).json({ error: 'Parent comment not found' });
-      }
-    } else {
-      post.comments.push(newComment);
-    }
+    post.comments.push(newComment);  // No nested structure, simple list of comments
 
     await post.save();
     res.status(201).json(post.comments);
@@ -234,17 +238,7 @@ app.post('/posts/:postId/comments', async (req, res) => {
   }
 });
 
-// Helper function to find comment by ID
-function findCommentById(comments, id) {
-  for (let comment of comments) {
-    if (comment._id.toString() === id) return comment;
-    const found = findCommentById(comment.replies, id);
-    if (found) return found;
-  }
-  return null;
-}
-
-// Get comments for a specific post
+// Get comments for a specific post (simple structure)
 app.get('/posts/:postId/comments', async (req, res) => {
   const { postId } = req.params;
   try {
@@ -253,62 +247,43 @@ app.get('/posts/:postId/comments', async (req, res) => {
       return res.status(404).json({ error: 'Post not found' });
     }
 
-    res.status(200).json(post.comments);
+    res.status(200).json(post.comments);  // Returning simple list of comments
   } catch (err) {
     console.error('Error fetching comments:', err);
     res.status(500).json({ error: 'Server error fetching comments', details: err.message });
   }
 });
 
-// Edit a comment
+// Edit a comment (simple structure)
 app.put('/comments/:id', async (req, res) => {
   const { id } = req.params;
-  const { text } = req.body;
+  const { user, text } = req.body;
 
   try {
-    const post = await Post.findOne({ 'comments._id': id });
+    const post = await Post.findOneAndUpdate(
+      { 'comments._id': id },
+      {
+        $set: {
+          'comments.$.text': text,
+          'comments.$.user': user,
+          'comments.$.createdAt': new Date(),
+        },
+      },
+      { new: true }
+    );
+
     if (!post) {
       return res.status(404).json({ error: 'Comment not found' });
     }
 
-    const comment = findCommentById(post.comments, id);
-    if (comment) {
-      comment.text = text;
-      await post.save();
-      res.status(200).json(comment);
-    } else {
-      res.status(404).json({ error: 'Comment not found' });
-    }
+    res.status(200).json(post);
   } catch (err) {
     console.error('Error editing comment:', err);
-    res.status(500).json({ error: 'Server error editing comment', details: err.message });
+    res.status(500).json({ error: 'Server error editing comment' });
   }
 });
 
-// Delete a comment
-app.delete('/comments/:id', async (req, res) => {
-  const { id } = req.params;
-
-  try {
-    const post = await Post.findOne({ 'comments._id': id });
-    if (!post) {
-      return res.status(404).json({ error: 'Comment not found' });
-    }
-
-    const commentIndex = post.comments.findIndex(comment => comment._id.toString() === id);
-    if (commentIndex !== -1) {
-      post.comments.splice(commentIndex, 1);
-      await post.save();
-      res.status(204).end();
-    } else {
-      res.status(404).json({ error: 'Comment not found' });
-    }
-  } catch (err) {
-    console.error('Error deleting comment:', err);
-    res.status(500).json({ error: 'Server error deleting comment', details: err.message });
-  }
-});
-
+// Start server
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import './style.css';
+import TestImage from '../pages/Test.png';
 
 const Test = () => {
   const [activeSection, setActiveSection] = useState('home');
@@ -14,7 +15,7 @@ const Test = () => {
       
       <nav className="navbar navbar-expand-lg fixed-top">
         <div className="container">
-          <a className="navbar-brand" href="#">Campus Connect</a>
+          <a className="navbar-brand" href="#home">Campus Connect</a>
           <button
             className="navbar-toggler"
             type="button"
@@ -31,7 +32,7 @@ const Test = () => {
               <li className="nav-item">
                 <Link
                   className={`nav-link ${activeSection === 'home' ? 'active' : ''}`}
-                  to="#"
+                  to="#home"
                   onClick={() => handleSetActive('home')}
                 >
                   Home
@@ -93,12 +94,13 @@ const Test = () => {
             <Link to="/registration1" className="btn btn-primary btn-lg mt-4">Register Now</Link>
           </div>
           <div className="col-lg-6 position-relative">
-            <img src="C:\Desktop\Manas\FSD\Campus-Connect\client\src\pages\Test.jpg" className="img-fluid rounded animated-image" alt="Image" />
+            <img src={TestImage} className="img-fluid rounded animated-image" alt="Image" />
           </div>
         </div>
 
         {/* Features Section */}
         <div id="features" className="features-section text-center mt-5">
+          <br></br>
           <h2 className="section-title">Features</h2>
           <p className="section-subtitle text-muted">Discover what makes Campus Connect the best choice for students.</p>
           <div className="row">
@@ -157,6 +159,7 @@ const Test = () => {
 
         {/* Contact Section */}
         <div id="contact" className="contact-section text-center mt-5">
+          <br></br>
           <h2 className="section-title">Contact Us</h2>
           <p className="section-subtitle text-muted">We'd love to hear from you! Whether you have a question or need assistance, our team is here to help.</p>
           <div className="contact-form mt-4">

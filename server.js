@@ -4,44 +4,46 @@ const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const multer = require('multer');
-const path = require('path'); // For serving the React app
-const cron = require('node-cron');
-const User = require('./models/User'); // User model
-const UserProfile = require('./models/UserProfile'); // UserProfile model
-const Post = require('./models/Post'); // Post model
+const path = require('path');
+const User = require('./models/User');
+const UserProfile = require('./models/UserProfile');
+const Post = require('./models/Post');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 const JWT_SECRET = 'your_jwt_secret_key'; // Replace with a strong secret key
+const MONGODB_URI = 'mongodb+srv://jolvin:jolvin123@cluster0.kzhz3.mongodb.net/chatForum?retryWrites=true&w=majority'; // Replace with your MongoDB connection string
 
 // Middleware
 app.use(cors());
 app.use(express.json());
 
 // File upload setup
-const upload = multer({ dest: 'uploads/' });
+const upload = multer({
+  dest: 'uploads/',
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
+    if (allowedTypes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Invalid file type'), false);
+    }
+  }
+});
 
-// MongoDB Connection (Updated)
-mongoose.connect('mongodb+srv://ap:bangtan%40123@cluster0.kzhz3.mongodb.net/chatForum?retryWrites=true&w=majority')
-  .then(() => {
-    console.log('Connected to MongoDB');
-  })
-  .catch((err) => {
-    console.error('Failed to connect to MongoDB:', err);
-  });
+// MongoDB Connection
+mongoose.connect(MONGODB_URI)
+  .then(() => console.log('Connected to MongoDB'))
+  .catch(err => console.error('Failed to connect to MongoDB:', err));
 
 // User Registration
 app.post('/register', async (req, res) => {
   const { email, password } = req.body;
-  if (!email || !password) {
-    return res.status(400).json({ error: 'Please fill all fields' });
-  }
+  if (!email || !password) return res.status(400).json({ error: 'Please fill all fields' });
 
   try {
     const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      return res.status(400).json({ error: 'User already exists' });
-    }
+    if (existingUser) return res.status(400).json({ error: 'User already exists' });
 
     const hashedPassword = await bcrypt.hash(password, 12);
     const newUser = new User({ email, password: hashedPassword });
@@ -56,20 +58,14 @@ app.post('/register', async (req, res) => {
 // User Login
 app.post('/login', async (req, res) => {
   const { email, password } = req.body;
-  if (!email || !password) {
-    return res.status(400).json({ error: 'Please fill all fields' });
-  }
+  if (!email || !password) return res.status(400).json({ error: 'Please fill all fields' });
 
   try {
     const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(400).json({ error: 'User not found' });
-    }
+    if (!user) return res.status(400).json({ error: 'User not found' });
 
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return res.status(400).json({ error: 'Invalid credentials' });
-    }
+    if (!isMatch) return res.status(400).json({ error: 'Invalid credentials' });
 
     const token = jwt.sign({ userId: user._id }, JWT_SECRET, { expiresIn: '1h' });
     res.status(200).json({ token });
@@ -85,9 +81,7 @@ app.post('/complete-registration', upload.single('profileImage'), async (req, re
 
   try {
     const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(400).json({ error: 'User not found' });
-    }
+    if (!user) return res.status(400).json({ error: 'User not found' });
 
     let userProfile = await UserProfile.findById(user._id);
     if (!userProfile) {
@@ -104,15 +98,17 @@ app.post('/complete-registration', upload.single('profileImage'), async (req, re
         profileImage: req.file ? req.file.filename : null,
       });
     } else {
-      userProfile.name = name;
-      userProfile.age = age;
-      userProfile.currentYear = currentYear;
-      userProfile.courseName = courseName;
-      userProfile.graduationYear = graduationYear;
-      userProfile.bio = bio;
-      userProfile.interestedFields = interestedFields;
-      userProfile.specialtyFields = specialtyFields;
-      userProfile.profileImage = req.file ? req.file.filename : userProfile.profileImage;
+      userProfile.set({
+        name,
+        age,
+        currentYear,
+        courseName,
+        graduationYear,
+        bio,
+        interestedFields,
+        specialtyFields,
+        profileImage: req.file ? req.file.filename : userProfile.profileImage,
+      });
     }
 
     await userProfile.save();
@@ -123,59 +119,117 @@ app.post('/complete-registration', upload.single('profileImage'), async (req, re
   }
 });
 
-// Get User Profile by ID
+
+// Fetch User Profile by ID
 app.get('/user-info', async (req, res) => {
-  const { id } = req.query;
-  try {
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ error: 'Invalid user ID format' });
+  const { id, email } = req.query;
+  if (id) {
+    if (!mongoose.Types.ObjectId.isValid(id)) return res.status(400).json({ error: 'Invalid user ID format' });
+
+    try {
+      const userProfile = await UserProfile.findById(id);
+      if (!userProfile) return res.status(404).json({ error: 'User profile not found' });
+      res.status(200).json(userProfile);
+    } catch (err) {
+      res.status(500).json({ error: 'Server error fetching user info' });
     }
+  } else if (email) {
+    try {
+      const user = await User.findOne({ email });
+      if (!user) return res.status(404).json({ error: 'User not found' });
 
-    // Find the profile using the same _id
-    const userProfile = await UserProfile.findById(id); // Use _id to fetch the profile
+      const userProfile = await UserProfile.findOne({ _id: user._id });
+      if (!userProfile) return res.status(404).json({ error: 'User profile not found' });
 
-    if (!userProfile) {
-      return res.status(404).json({ error: 'User profile not found' });
+      res.status(200).json({
+        name: userProfile.name,
+        profileImage: userProfile.profileImage,
+      });
+    } catch (err) {
+      console.error('Error fetching user info:', err);
+      res.status(500).json({ error: 'Server error fetching user info' });
     }
-
-    res.status(200).json(userProfile); // Ensure JSON is returned
-  } catch (err) {
-    res.status(500).json({ error: 'Server error fetching user info' });
+  } else {
+    res.status(400).json({ error: 'No query parameters provided' });
   }
 });
 
-
-// Search Users by Query
-app.get('/api/search-users', async (req, res) => {
-  const { query } = req.query;
-
-  if (!query) {
-    return res.status(400).json({ error: 'Search query is required.' });
+// Fetch all posts, sorted by creation date (newest first)
+app.get('/posts', async (req, res) => {
+  try {
+    const posts = await Post.find().sort({ createdAt: -1 }); // Sort by createdAt in descending order
+    res.status(200).json(posts);
+  } catch (err) {
+    console.error('Error fetching posts:', err);
+    res.status(500).json({ error: 'Server error fetching posts' });
   }
+});
+
+// Create a new post
+app.post('/posts', async (req, res) => {
+  const { title, user, content } = req.body;
 
   try {
-    // Use regex to perform a partial, case-insensitive search on the 'name' field
-    const users = await UserProfile.find({
-      name: { $regex: query, $options: 'i' } // 'i' makes it case-insensitive
-    }).select('_id name profileImage');
+    const newPost = new Post({
+      title,
+      user,
+      content,
+      likes: 0,
+      comments: [],
+    });
 
-    // Return the users that match the search query
-    res.json(users);
+    await newPost.save();
+    res.status(201).json(newPost);
   } catch (err) {
-    console.error('Error searching users:', err);
-    res.status(500).json({ error: 'Failed to search users' });
+    console.error('Error creating post:', err);
+    res.status(500).json({ error: 'Server error creating post' });
   }
 });
 
-// Serve React app for all other routes in production
-if (process.env.NODE_ENV === 'production') {
-  app.use(express.static(path.join(__dirname, 'client/build')));
+// Like a post
+app.post('/posts/:id/like', async (req, res) => {
+  const { id } = req.params;
+  const { liked } = req.body;
 
-  app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'client/build', 'index.html'));
-  });
-}
+  try {
+    const post = await Post.findById(id);
+    if (!post) return res.status(404).json({ error: 'Post not found' });
 
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+    post.liked = liked;
+    post.likes = liked ? post.likes + 1 : post.likes - 1;
+    await post.save();
+
+    res.status(200).json(post);
+  } catch (err) {
+    console.error('Error liking post:', err);
+    res.status(500).json({ error: 'Server error liking post' });
+  }
 });
+
+// Add a comment to a post
+app.post('/posts/:id/comments', async (req, res) => {
+  const { id } = req.params;
+  const { user, text } = req.body;
+
+  try {
+    const post = await Post.findById(id);
+    if (!post) return res.status(404).json({ error: 'Post not found' });
+
+    const newComment = {
+      user,
+      text,
+      createdAt: new Date(), // Ensure the createdAt field is set
+    };
+
+    post.comments.push(newComment);
+    await post.save();
+
+    res.status(201).json(newComment);
+  } catch (err) {
+    console.error('Error adding comment:', err);
+    res.status(500).json({ error: 'Server error adding comment' });
+  }
+});
+
+// Start the server
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

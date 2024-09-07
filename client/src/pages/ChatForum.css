@@ -222,14 +222,7 @@ body {
   color: #0056b3;
 }
 
-.replies {
-  margin-left: 20px;
-  border-left: 2px solid #ccc;
-  padding-left: 10px;
-  margin-top: 10px;
-}
-
-/* Add specific styles for collapsible and expandable actions */
+/* Simplify styles for non-nested comments */
 .reply {
   color: #007bff;
   cursor: pointer;
@@ -258,6 +251,7 @@ body {
 .reply.comment:hover {
   background-color: #0056b3;
 }
+
 
 /* Style for input and text area */
 .inputContainer__input {

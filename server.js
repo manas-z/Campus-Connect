@@ -142,11 +142,37 @@ app.get('/user-info', async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: 'Server error fetching user info' });
   }
+
+  try {
+    // Create a new post with the current date and time
+    const newPost = new Post({
+      title,
+      user,
+      content,
+      createdAt: new Date(), // Explicitly setting the creation date
+    });
+  const savedPost = await newPost.save();
+  res.status(201).json(savedPost);
+  } catch (err) {
+    console.error('Error creating post:', err);
+    res.status(500).json({ error: 'Server error creating post' });
+  }
+});
+
+// Get all posts
+app.get('/posts', async (req, res) => {
+  try {
+    // Fetch posts sorted by creation date in descending order
+    const posts = await Post.find().sort({ createdAt: -1 });
+    res.status(200).json(posts);
+  } catch (err) {
+    console.error('Error fetching posts:', err);
+    res.status(500).json({ error: 'Server error fetching posts' });
+  }
 });
 
 
-// Search Users by Query
-app.get('/api/search-users', async (req, res) => {
+app.get('/api/search', async (req, res) => {
   const { query } = req.query;
 
   if (!query) {

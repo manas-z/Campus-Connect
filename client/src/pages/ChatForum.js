@@ -12,6 +12,7 @@ const generateUniqueId = () => '_' + Math.random().toString(36).substr(2, 9);
 const ChatForum = () => {
   const [posts, setPosts] = useState([]);
   const [searchResults, setSearchResults] = useState([]);
+  const [searchResults, setSearchResults] = useState([]);
   const [newPostTitle, setNewPostTitle] = useState('');
   const [newPostContent, setNewPostContent] = useState('');
   const [newComment, setNewComment] = useState('');
@@ -71,11 +72,31 @@ const ChatForum = () => {
     setShowDropdown(!showDropdown);
   };
 
+  const toggleSearch = () => {
+    setShowSearch(!showSearch);
+  };
+
+  const toggleDropdown = () => {
+    setShowDropdown(!showDropdown);
+  };
+
+  const toggleSearch = () => {
+    setShowSearch(!showSearch);
+  };
+
+  const toggleDropdown = () => {
+    setShowDropdown(!showDropdown);
+  };
+
   const handleAddPost = async () => {
+    const email = localStorage.getItem('userEmail');
+    const userName = localStorage.getItem('userName') || 'Anonymous'; // Fetch the user name from localStorage if available
+  
     if (newPostTitle.trim() && newPostContent.trim()) {
       const post = {
         title: newPostTitle,
         user: {
+          name: userName,
           name: userName || 'Anonymous',
           year: '1st',
           profileLogo: profileImage || 'default-profile-logo-url',
@@ -105,6 +126,34 @@ const ChatForum = () => {
       }
     }
   };
+        comments: [], // Initialize comments as an empty array
+        };
+    
+        try {
+          const response = await fetch('http://localhost:5000/posts', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(post),
+          });
+          const newPost = await response.json();
+          if (response.ok) {
+            // Add new post to the beginning of the posts array
+            setPosts([newPost, ...posts]);
+            setNewPostTitle('');
+            setNewPostContent('');
+          } else {
+            console.error(newPost.error);
+          }
+        } catch (err) {
+          console.error('Error adding post:', err);
+        }
+      }
+    };
+    
+
+
 
   const handleLike = async (postId) => {
     const updatedPosts = posts.map(post => 

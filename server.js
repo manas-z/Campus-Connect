@@ -183,20 +183,21 @@ app.get('/posts', async (req, res) => {
 });
 
 
+// Updated Search Endpoint
 app.get('/api/search', async (req, res) => {
   const { query } = req.query;
   if (!query) {
     return res.status(400).json({ error: 'Search query is required.' });
   }
 
-  const searchTerms = query.split(/\s+/); // Split input into words
+  const searchPhrase = query.trim(); // Use the entire query as a single phrase
 
   try {
-    // Search for posts that contain any of the search terms in their title or content
+    // Search for posts that contain the exact phrase in their title or content
     const posts = await Post.find({
       $or: [
-        { title: { $regex: searchTerms.join('|'), $options: 'i' } },    // Matches any word in the title
-        { content: { $regex: searchTerms.join('|'), $options: 'i' } },  // Matches any word in the content
+        { title: { $regex: searchPhrase, $options: 'i' } },    // Matches the exact phrase in the title
+        { content: { $regex: searchPhrase, $options: 'i' } },  // Matches the exact phrase in the content
       ],
     });
     res.json(posts);

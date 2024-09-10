@@ -8,7 +8,8 @@ const SearchBar = ({ onSearchResults }) => {
     e.preventDefault();
     if (query.trim()) {
       try {
-        const response = await axios.get(`http://localhost:5000/api/search?query=${query}`);
+        // Use encodeURIComponent to properly format the query string
+        const response = await axios.get(`http://localhost:5000/api/search?query=${encodeURIComponent(query.trim())}`);
         onSearchResults(response.data); // Pass results to parent component
       } catch (error) {
         console.error('Error fetching search results:', error);

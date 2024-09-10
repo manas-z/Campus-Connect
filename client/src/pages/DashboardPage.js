@@ -1,41 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Line, Bar } from 'react-chartjs-2';
 import { Link } from 'react-router-dom';
 import SearchBar from './SearchBar';  // Import the SearchBar component
-
 import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend
-} from 'chart.js';
-import {
-  FaTachometerAlt,
-  FaIcons,
-  FaMap,
-  FaBell,
-  FaTable,
-  FaFont,
-  FaLifeRing,
   FaSearch
 } from 'react-icons/fa';
 import './Dashboard.css';
-
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend
-);
 
 const DashboardPage = () => {
   const [showSearch, setShowSearch] = useState(false);

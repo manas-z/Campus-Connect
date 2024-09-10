@@ -60,9 +60,10 @@ const ChatForum = () => {
     fetchPosts();
   }, []);
   
+
   const handleSearchResults = (results) => {
     setSearchResults(results);
-    }
+  }
 
     const handleAddPost = async () => {
       if (newPostTitle.trim() && newPostContent.trim()) {

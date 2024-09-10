@@ -13,13 +13,17 @@ const postSchema = new mongoose.Schema({
   title: { type: String, required: true },
   user: { type: Object, required: true },
   content: { type: String, required: true },
+  likes: { type: Number, default: 0 },
   createdAt: { type: Date, default: Date.now },
-  comments: [commentSchema], // Embed the comment schema directly
+  createdAt: { type: Date, default: Date.now },
+  comments: [commentSchema], // Embed the simplified comment schema directly
   
 });
+
 
 // Create models
 const Comment = mongoose.model('Comment', commentSchema);
 const Post = mongoose.model('Post', postSchema);
 
 module.exports = { Post, Comment };
+

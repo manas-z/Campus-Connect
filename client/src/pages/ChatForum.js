@@ -6,33 +6,32 @@ import SearchBar from './SearchBar';
 import './ChatForum.css';
 import './Dashboard.css'; // Import Dashboard styles for consistency
 
-// Function to generate unique IDs
-const generateUniqueId = () => '_' + Math.random().toString(36).substr(2, 9);
-
 const ChatForum = () => {
   const [posts, setPosts] = useState([]);
-  const [searchResults, setSearchResults] = useState([]);
-  const [searchResults, setSearchResults] = useState([]);
+  const [searchResults, setSearchResults] = useState({ posts: [], profiles: [] });
   const [newPostTitle, setNewPostTitle] = useState('');
   const [newPostContent, setNewPostContent] = useState('');
   const [newComment, setNewComment] = useState('');
-  const [replyToCommentId, setReplyToCommentId] = useState(null);
   const [showSearch, setShowSearch] = useState(false);
   const [userName, setUserName] = useState('');
   const [profileImage, setProfileImage] = useState('');
   const [showDropdown, setShowDropdown] = useState(false);
+  const [commentsData, setCommentsData] = useState({ id: 1, items: [] });
+
+  const { insertNode, editNode, deleteNode } = useNode();
 
   useEffect(() => {
     const fetchUserData = async () => {
       const email = localStorage.getItem('userEmail');
       if (!email) return;
-
+  
       try {
         const response = await fetch(`http://localhost:5000/user-info?email=${email}`);
         const data = await response.json();
         if (response.ok) {
           setUserName(data.name);
           setProfileImage(data.profileImage);
+          localStorage.setItem('userName', data.name); // Store user name in localStorage
         } else {
           console.error(data.error);
         }
@@ -41,6 +40,7 @@ const ChatForum = () => {
       }
     };
 
+    
     const fetchPosts = async () => {
       try {
         const response = await fetch('http://localhost:5000/posts');
@@ -55,37 +55,12 @@ const ChatForum = () => {
       }
     };
 
-    
     fetchUserData();
     fetchPosts();
   }, []);
-  
+
   const handleSearchResults = (results) => {
     setSearchResults(results);
-    }
-
-  const toggleSearch = () => {
-    setShowSearch(!showSearch);
-  };
-
-  const toggleDropdown = () => {
-    setShowDropdown(!showDropdown);
-  };
-
-  const toggleSearch = () => {
-    setShowSearch(!showSearch);
-  };
-
-  const toggleDropdown = () => {
-    setShowDropdown(!showDropdown);
-  };
-
-  const toggleSearch = () => {
-    setShowSearch(!showSearch);
-  };
-
-  const toggleDropdown = () => {
-    setShowDropdown(!showDropdown);
   };
 
   const handleAddPost = async () => {
@@ -98,11 +73,10 @@ const ChatForum = () => {
         user: {
           name: userName,
           name: userName || 'Anonymous',
-          year: '1st',
+          year: 'None',
           profileLogo: profileImage || 'default-profile-logo-url',
         },
         content: newPostContent,
-        comments: [], // Initialize comments as an empty array
       };
 
       try {
@@ -115,7 +89,8 @@ const ChatForum = () => {
         });
         const newPost = await response.json();
         if (response.ok) {
-          setPosts([...posts, newPost]);
+          // Add new post to the beginning of the posts array
+          setPosts([newPost, ...posts]);
           setNewPostTitle('');
           setNewPostContent('');
         } else {
@@ -126,37 +101,9 @@ const ChatForum = () => {
       }
     }
   };
-        comments: [], // Initialize comments as an empty array
-        };
-    
-        try {
-          const response = await fetch('http://localhost:5000/posts', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(post),
-          });
-          const newPost = await response.json();
-          if (response.ok) {
-            // Add new post to the beginning of the posts array
-            setPosts([newPost, ...posts]);
-            setNewPostTitle('');
-            setNewPostContent('');
-          } else {
-            console.error(newPost.error);
-          }
-        } catch (err) {
-          console.error('Error adding post:', err);
-        }
-      }
-    };
-    
-
-
 
   const handleLike = async (postId) => {
-    const updatedPosts = posts.map(post => 
+    const updatedPosts = posts.map(post =>
       post._id === postId ? { ...post, liked: !post.liked, likes: post.liked ? post.likes - 1 : post.likes + 1 } : post
     );
 
@@ -176,6 +123,8 @@ const ChatForum = () => {
   };
 
   const handleAddComment = async (postId) => {
+    const userName = localStorage.getItem('userName') || 'Anonymous'; // Fetch the user name from localStorage if available
+  
     if (newComment.trim()) {
       try {
         const response = await fetch(`http://localhost:5000/posts/${postId}/comments`, {
@@ -184,46 +133,22 @@ const ChatForum = () => {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            user: userName || 'Anonymous',
+            user: userName,
             text: newComment,
           }),
         });
-
+  
         const newCommentResponse = await response.json();
         if (response.ok) {
           const updatedPosts = posts.map(post => {
             if (post._id === postId) {
-              if (replyToCommentId === null) {
-                post.comments.push(newCommentResponse);
-              } else {
-                const addReply = (comments, parentId) => {
-                  return comments.map(comment => {
-                    if (comment._id === parentId) {
-                      return {
-                        ...comment,
-                        replies: [
-                          ...comment.replies,
-                          newCommentResponse,
-                        ],
-                      };
-                    } else if (comment.replies && comment.replies.length > 0) {
-                      return {
-                        ...comment,
-                        replies: addReply(comment.replies, parentId),
-                      };
-                    }
-                    return comment;
-                  });
-                };
-                post.comments = addReply(post.comments, replyToCommentId);
-              }
+              post.comments.push(newCommentResponse); // Directly push the comment (no nested structure)
             }
             return post;
           });
-
+  
           setPosts(updatedPosts);
           setNewComment('');
-          setReplyToCommentId(null);  // Reset reply mode after adding the reply
         } else {
           console.error(newCommentResponse.error);
         }
@@ -232,6 +157,9 @@ const ChatForum = () => {
       }
     }
   };
+  
+
+  
 
   const renderComments = (comments) => {
     return comments.map((comment) => (
@@ -240,18 +168,6 @@ const ChatForum = () => {
           <strong>{comment.user}</strong>
         </div>
         <p>{comment.text}</p>
-        <button 
-          className="reply-button"
-          onClick={() => setReplyToCommentId(comment._id)}
-        >
-          Reply
-        </button>
-        {/* Ensure replies exist before accessing them */}
-        {comment.replies && comment.replies.length > 0 && (
-          <div className="replies">
-            {renderComments(comment.replies)}
-          </div>
-        )}
       </div>
     ));
   };
@@ -260,13 +176,13 @@ const ChatForum = () => {
     <div className="chat-forum-page">
       {/* Header with Navbar */}
       <header className="header">
-        <div className="logo">DASHBOARD</div>
+        <div className="logo">Chat Forum</div>
         <div className="user-search">
           {/* SearchBar Component */}
           {showSearch && <SearchBar onSearchResults={handleSearchResults} />}
           <FaSearch className="icon" onClick={toggleSearch} />
           <div className="user-profile" onClick={toggleDropdown}>
-            <img src={profileImage} alt="Profile" className="profile-image" />
+            <img src={profileImage || 'default-profile-logo-url'} alt="Profile" className="profile-image" />
             <span className="user-name">{userName}</span>
             {showDropdown && (
               <div className="dropdown-menu">
@@ -305,51 +221,59 @@ const ChatForum = () => {
             <button onClick={handleAddPost}>Create Forum</button>
           </div>
 
-          <ul className="posts-list">
-            {/* Display posts based on search results */}
-            {(searchResults.length > 0 ? searchResults : posts).map((post) => (
-              <li key={post._id} className="post">
-                <div className="post-header">
-                  <div className="profile">
-                    <img src={post.user.profileLogo} alt="Profile" className="profile-logo" />
+          <div className="search-results">
+            <h2>Search Results</h2>
+
+            {/* Render user profiles if there are any */}
+            {searchResults.profiles.length > 0 && (
+              <>
+                <h3>User Profiles:</h3>
+                {searchResults.profiles.map((profile) => (
+                  <div key={profile._id} className="profile-result">
+                    <img src={profile.profileImage} alt="Profile" className="profile-image" />
                     <div className="profile-info">
-                      <h3>{post.user.name}</h3>
-                      <p>Year: {post.user.year}</p>
+                      <h4>{profile.name}</h4>
+                      <p>{profile.bio}</p>
                     </div>
                   </div>
-                </div>
-                <div className="post-content">
-                  <h3>{post.title}</h3>
-                  <p>{post.content}</p>
-                </div>
-                <div className="post-actions">
-                  <textarea
-                    className="comment-input"
-                    placeholder={replyToCommentId ? "Reply to comment" : "Add a comment"}
-                    value={newComment}
-                    onChange={(e) => setNewComment(e.target.value)}
-                  />
-                  <div className="action-buttons">
-                    <button 
-                      className={`like-button ${post.liked ? 'liked' : ''}`} 
-                      onClick={() => handleLike(post._id)}
-                    >
-                      Like {post.likes}
-                    </button>
-                    <button 
-                      className="comment-button" 
-                      onClick={() => handleAddComment(post._id)}
-                    >
-                      {replyToCommentId ? "Reply" : "Comment"}
-                    </button>
-                  </div>
-                </div>
-                <div className="comments-section">
-                  {renderComments(post.comments)}
-                </div>
-              </li>
-            ))}
-          </ul>
+                ))}
+              </>
+            )}
+
+            {/* Render posts if there are any */}
+            {searchResults.posts.length > 0 && (
+              <>
+                <h3>Posts:</h3>
+                <ul className="posts-list">
+                  {searchResults.posts.map((post) => (
+                    <li key={post._id} className="post">
+                      <div className="post-header">
+                        <div className="profile">
+                          <img src={post.user.profileLogo} alt="Profile" className="profile-logo" />
+                          <div className="profile-info">
+                            <h3>{post.user.name}</h3>
+                            <p>Year: {post.user.year}</p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="post-content">
+                        <h3>{post.title}</h3>
+                        <p>{post.content}</p>
+                      </div>
+                      <div className="comments-section">
+                        <Comment
+                          handleInsertNode={handleInsertNode}
+                          handleEditNode={handleEditNode}
+                          handleDeleteNode={handleDeleteNode}
+                          comment={commentsData}
+                        />
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </>
+            )}
+          </div>
         </div>
       </div>
     </div>

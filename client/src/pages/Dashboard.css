@@ -6,6 +6,7 @@ body {
   font-family: 'Poppins', sans-serif; /* Updated font to match the design */
   background-color: #181c32; /* Dark blue background */
   color: #f8f8f2;
+  scroll-behavior: auto;
 }
 
 .dashboard-page {

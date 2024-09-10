@@ -5,37 +5,36 @@ import './SearchBar1.css';
 const SearchBar1 = ({ onSearchResults }) => {
   const [query, setQuery] = useState('');
 
-  // Fetch search results based on the search term
-  const fetchResults = debounce(async (searchTerm) => {
-    if (!searchTerm) return; // Return early if search term is empty
+  const handleSearch = async (e) => {
+    e.preventDefault();
+    if (query.trim()) {
+      try {
+        // Use encodeURIComponent to properly format the query string
+        const response = await axios.get(`http://localhost:5000/api/search?query=${encodeURIComponent(query.trim())}`);
+        
+        // Destructure posts and profiles from the response data
+        const { posts, profiles } = response.data;
 
-    try {
-      const response = await fetch(`http://localhost:5000/api/search-users?query=${encodeURIComponent(searchTerm)}`);
-      
-      if (!response.ok) {
-        console.error('Error fetching search results:', response.statusText);
-        return;
+        // Combine and pass both posts and profiles to the parent component
+        onSearchResults({ posts, profiles });
+      } catch (error) {
+        console.error('Error fetching search results:', error);
       }
-
-      const data = await response.json();
-      onSearchResults(data); // Pass search results to parent component
-    } catch (error) {
-      console.error('Error fetching search results:', error);
     }
-  }, 300); // 300ms debounce delay to minimize API calls
-
-  // Effect to trigger search when query changes
-  useEffect(() => {
-    fetchResults(query);
-  }, [query]);
+  };
 
   return (
-    <input
-      type="text"
-      value={query}
-      onChange={(e) => setQuery(e.target.value)}
-      placeholder="Search users..."
-    />
+    <div className="search-bar-container">
+      <form onSubmit={handleSearch}>
+        <input
+          type="text"
+          placeholder="Search for posts or users..."
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+        />
+        <button type="submit">Search</button>
+      </form>
+    </div>
   );
 };
 

@@ -6,12 +6,13 @@ body {
   font-family: 'Poppins', sans-serif;
   background-color: #181c32;
   color: #f8f8f2;
+  scroll-behavior: auto;
 }
 
 .chat-forum-page {
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  min-height: 100vh;
   background-color: #181c32;
 }
 

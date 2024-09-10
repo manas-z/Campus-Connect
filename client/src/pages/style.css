@@ -100,7 +100,7 @@ body {
     color: #cfd8dc;
 }
 
-.features-section, .contact-section, .faq-section {
+.home, .features-section, .contact-section, .faq-section {
     padding: 50px 0;
 }
 
@@ -130,16 +130,20 @@ body {
     color: #cfd8dc;
 }
 
-.animated-image {
-    animation: slideIn 1.5s ease-in-out;
-}
-
+/* Define keyframes for the animation */
 @keyframes fadeIn {
-    0% { opacity: 0; }
-    100% { opacity: 1; }
-}
-
-@keyframes slideIn {
-    0% { transform: translateX(100%); opacity: 0; }
-    100% { transform: translateX(0); opacity: 1; }
-}
+    from {
+      opacity: 0;
+      transform: scale(0.9);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+  
+  /* Apply the animation to the class */
+  .animated-image {
+    animation: fadeIn 1s ease-in-out;
+  }
+  

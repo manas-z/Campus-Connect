@@ -25,12 +25,12 @@ mongoose.connect('mongodb+srv://jolvin:jolvin123@cluster0.kzhz3.mongodb.net/chat
   useNewUrlParser: true,
   useUnifiedTopology: true,
 })
-.then(() => {
-  console.log('Connected to MongoDB');
-})
-.catch((err) => {
-  console.error('Failed to connect to MongoDB:', err);
-});
+  .then(() => {
+    console.log('Connected to MongoDB');
+  })
+  .catch((err) => {
+    console.error('Failed to connect to MongoDB:', err);
+  });
 
 // User Registration
 app.post('/register', async (req, res) => {
@@ -155,15 +155,14 @@ app.post('/posts', async (req, res) => {
   }
 
   try {
-    // Create a new post with the current date and time
     const newPost = new Post({
       title,
       user,
       content,
-      createdAt: new Date(), // Explicitly setting the creation date
+      createdAt: new Date(),
     });
-  const savedPost = await newPost.save();
-  res.status(201).json(savedPost);
+    const savedPost = await newPost.save();
+    res.status(201).json(savedPost);
   } catch (err) {
     console.error('Error creating post:', err);
     res.status(500).json({ error: 'Server error creating post' });
@@ -173,7 +172,6 @@ app.post('/posts', async (req, res) => {
 // Get all posts
 app.get('/posts', async (req, res) => {
   try {
-    // Fetch posts sorted by creation date in descending order
     const posts = await Post.find().sort({ createdAt: -1 });
     res.status(200).json(posts);
   } catch (err) {
@@ -182,7 +180,6 @@ app.get('/posts', async (req, res) => {
   }
 });
 
-
 // Updated Search Endpoint
 app.get('/api/search', async (req, res) => {
   const { query } = req.query;
@@ -190,7 +187,7 @@ app.get('/api/search', async (req, res) => {
     return res.status(400).json({ error: 'Search query is required.' });
   }
 
-  const searchPhrase = query.trim(); // Use the entire query as a single phrase
+  const searchPhrase = query.trim();
 
   try {
     // Search for posts that contain the exact phrase in their title or content
@@ -200,13 +197,22 @@ app.get('/api/search', async (req, res) => {
         { content: { $regex: searchPhrase, $options: 'i' } },  // Matches the exact phrase in the content
       ],
     });
-    res.json(posts);
+
+    // Search for user profiles that contain the exact phrase in their name
+    const profiles = await UserProfile.find({
+      name: { $regex: searchPhrase, $options: 'i' },
+    });
+
+    // Find posts created by users whose names match the search query
+    const userPosts = await Post.find().populate('user', 'name').where('user.name').regex(new RegExp(searchPhrase, 'i'));
+
+    // Combine the search results
+    res.json({ posts: [...posts, ...userPosts], profiles });
   } catch (err) {
-    console.error('Error searching posts:', err);
-    res.status(500).json({ error: 'Failed to search posts' });
+    console.error('Error searching:', err);
+    res.status(500).json({ error: 'Failed to search posts and profiles' });
   }
 });
-
 
 // Create a new comment on a post (without nesting)
 app.post('/posts/:postId/comments', async (req, res) => {
@@ -229,7 +235,7 @@ app.post('/posts/:postId/comments', async (req, res) => {
       createdAt: new Date(),
     };
 
-    post.comments.push(newComment);  // No nested structure, simple list of comments
+    post.comments.push(newComment);
 
     await post.save();
     res.status(201).json(post.comments);
@@ -248,43 +254,13 @@ app.get('/posts/:postId/comments', async (req, res) => {
       return res.status(404).json({ error: 'Post not found' });
     }
 
-    res.status(200).json(post.comments);  // Returning simple list of comments
+    res.status(200).json(post.comments);
   } catch (err) {
     console.error('Error fetching comments:', err);
     res.status(500).json({ error: 'Server error fetching comments', details: err.message });
   }
 });
 
-// Edit a comment (simple structure)
-app.put('/comments/:id', async (req, res) => {
-  const { id } = req.params;
-  const { user, text } = req.body;
-
-  try {
-    const post = await Post.findOneAndUpdate(
-      { 'comments._id': id },
-      {
-        $set: {
-          'comments.$.text': text,
-          'comments.$.user': user,
-          'comments.$.createdAt': new Date(),
-        },
-      },
-      { new: true }
-    );
-
-    if (!post) {
-      return res.status(404).json({ error: 'Comment not found' });
-    }
-
-    res.status(200).json(post);
-  } catch (err) {
-    console.error('Error editing comment:', err);
-    res.status(500).json({ error: 'Server error editing comment' });
-  }
-});
-
-// Start server
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });

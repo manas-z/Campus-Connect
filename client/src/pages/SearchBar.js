@@ -10,7 +10,12 @@ const SearchBar = ({ onSearchResults }) => {
       try {
         // Use encodeURIComponent to properly format the query string
         const response = await axios.get(`http://localhost:5000/api/search?query=${encodeURIComponent(query.trim())}`);
-        onSearchResults(response.data); // Pass results to parent component
+        
+        // Destructure posts and profiles from the response data
+        const { posts, profiles } = response.data;
+
+        // Combine and pass both posts and profiles to the parent component
+        onSearchResults({ posts, profiles });
       } catch (error) {
         console.error('Error fetching search results:', error);
       }
@@ -22,7 +27,7 @@ const SearchBar = ({ onSearchResults }) => {
       <form onSubmit={handleSearch}>
         <input
           type="text"
-          placeholder="Search for posts..."
+          placeholder="Search for posts or users..."
           value={query}
           onChange={(e) => setQuery(e.target.value)}
         />

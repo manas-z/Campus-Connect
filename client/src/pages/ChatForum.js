@@ -10,7 +10,7 @@ import './Dashboard.css';
 
 const ChatForum = () => {
   const [posts, setPosts] = useState([]);
-  const [searchResults, setSearchResults] = useState([]);
+  const [searchResults, setSearchResults] = useState({ posts: [], profiles: [] });
   const [newPostTitle, setNewPostTitle] = useState('');
   const [newPostContent, setNewPostContent] = useState('');
   const [userName, setUserName] = useState('');
@@ -18,7 +18,6 @@ const ChatForum = () => {
   const [showSearch, setShowSearch] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const [commentsData, setCommentsData] = useState({ id: 1, items: [] });
-  const [postComments, setPostComments] = useState({});
 
   const { insertNode, editNode, deleteNode } = useNode();
 
@@ -55,53 +54,48 @@ const ChatForum = () => {
       }
     };
 
-    
     fetchUserData();
     fetchPosts();
   }, []);
-  
 
   const handleSearchResults = (results) => {
     setSearchResults(results);
-  }
+  };
 
-    const handleAddPost = async () => {
-      if (newPostTitle.trim() && newPostContent.trim()) {
-        const post = {
-          title: newPostTitle,
-          user: {
-            name: userName || 'Anonymous',
-            year: 'None',
-            profileLogo: profileImage || 'default-profile-logo-url',
+  const handleAddPost = async () => {
+    if (newPostTitle.trim() && newPostContent.trim()) {
+      const post = {
+        title: newPostTitle,
+        user: {
+          name: userName || 'Anonymous',
+          year: 'None',
+          profileLogo: profileImage || 'default-profile-logo-url',
+        },
+        content: newPostContent,
+      };
+
+      try {
+        const response = await fetch('http://localhost:5000/posts', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
           },
-          content: newPostContent,
-        };
-    
-        try {
-          const response = await fetch('http://localhost:5000/posts', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(post),
-          });
-          const newPost = await response.json();
-          if (response.ok) {
-            // Add new post to the beginning of the posts array
-            setPosts([newPost, ...posts]);
-            setNewPostTitle('');
-            setNewPostContent('');
-          } else {
-            console.error(newPost.error);
-          }
-        } catch (err) {
-          console.error('Error adding post:', err);
+          body: JSON.stringify(post),
+        });
+        const newPost = await response.json();
+        if (response.ok) {
+          // Add new post to the beginning of the posts array
+          setPosts([newPost, ...posts]);
+          setNewPostTitle('');
+          setNewPostContent('');
+        } else {
+          console.error(newPost.error);
         }
+      } catch (err) {
+        console.error('Error adding post:', err);
       }
-    };
-    
-
-
+    }
+  };
 
   const handleInsertNode = (commentId, text) => {
     const updatedTree = insertNode(commentsData, commentId, text);
@@ -172,35 +166,59 @@ const ChatForum = () => {
             <button onClick={handleAddPost}>Create Forum</button>
           </div>
 
-          <ul className="posts-list">
-            {/* Display posts based on search results */}
-            {(searchResults.length > 0 ? searchResults : posts).map((post) => (
-              <li key={post._id} className="post">
-                <div className="post-header">
-                  <div className="profile">
-                    <img src={post.user.profileLogo} alt="Profile" className="profile-logo" />
+          <div className="search-results">
+            <h2>Search Results</h2>
+
+            {/* Render user profiles if there are any */}
+            {searchResults.profiles.length > 0 && (
+              <>
+                <h3>User Profiles:</h3>
+                {searchResults.profiles.map((profile) => (
+                  <div key={profile._id} className="profile-result">
+                    <img src={profile.profileImage} alt="Profile" className="profile-image" />
                     <div className="profile-info">
-                      <h3>{post.user.name}</h3>
-                      <p>Year: {post.user.year}</p>
+                      <h4>{profile.name}</h4>
+                      <p>{profile.bio}</p>
                     </div>
                   </div>
-                </div>
-                <div className="post-content">
-                  <h3>{post.title}</h3>
-                  <p>{post.content}</p>
-                </div>
+                ))}
+              </>
+            )}
 
-                <div className="comments-section">
-                  <Comment
-                    handleInsertNode={handleInsertNode}
-                    handleEditNode={handleEditNode}
-                    handleDeleteNode={handleDeleteNode}
-                    comment={commentsData}
-                  />
-                </div>
-              </li>
-            ))}
-          </ul>
+            {/* Render posts if there are any */}
+            {searchResults.posts.length > 0 && (
+              <>
+                <h3>Posts:</h3>
+                <ul className="posts-list">
+                  {searchResults.posts.map((post) => (
+                    <li key={post._id} className="post">
+                      <div className="post-header">
+                        <div className="profile">
+                          <img src={post.user.profileLogo} alt="Profile" className="profile-logo" />
+                          <div className="profile-info">
+                            <h3>{post.user.name}</h3>
+                            <p>Year: {post.user.year}</p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="post-content">
+                        <h3>{post.title}</h3>
+                        <p>{post.content}</p>
+                      </div>
+                      <div className="comments-section">
+                        <Comment
+                          handleInsertNode={handleInsertNode}
+                          handleEditNode={handleEditNode}
+                          handleDeleteNode={handleDeleteNode}
+                          comment={commentsData}
+                        />
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </>
+            )}
+          </div>
         </div>
       </div>
     </div>

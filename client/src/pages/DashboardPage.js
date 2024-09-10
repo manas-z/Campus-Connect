@@ -1,48 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { Line, Bar } from 'react-chartjs-2';
 import { Link } from 'react-router-dom';
 import SearchBar from './SearchBar';  // Import the SearchBar component
-
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend
-} from 'chart.js';
-import {
-  FaTachometerAlt,
-  FaIcons,
-  FaMap,
-  FaBell,
-  FaTable,
-  FaFont,
-  FaLifeRing,
-  FaSearch
-} from 'react-icons/fa';
+import { FaSearch } from 'react-icons/fa';
 import './Dashboard.css';
-
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend
-);
 
 const DashboardPage = () => {
   const [showSearch, setShowSearch] = useState(false);
   const [userName, setUserName] = useState('');
   const [profileImage, setProfileImage] = useState('');
   const [showDropdown, setShowDropdown] = useState(false);
-  const [searchResults, setSearchResults] = useState([]); // State for search results
+  const [searchResults, setSearchResults] = useState({ posts: [], profiles: [] }); // Updated state for search results
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -54,7 +21,7 @@ const DashboardPage = () => {
         const data = await response.json();
         if (response.ok) {
           setUserName(data.name);
-          setProfileImage(data.profileImage); 
+          setProfileImage(data.profileImage);
           alert(`Welcome, ${data.name}!`);
         } else {
           console.error(data.error);
@@ -88,8 +55,6 @@ const DashboardPage = () => {
           {/* Display SearchBar component */}
           {showSearch && <SearchBar onSearchResults={handleSearchResults} />}
           <FaSearch className="icon" onClick={toggleSearch} />
-          
-          {/* User Profile Section */}
           <div className="user-profile" onClick={toggleDropdown}>
             <img src={profileImage} alt="Profile" className="profile-image" />
             <span className="user-name">{userName}</span>
@@ -117,22 +82,47 @@ const DashboardPage = () => {
         {/* Main Content Area */}
         <div className="main-content">
           {/* Display search results if available */}
-          {searchResults.length > 0 && (
+          {searchResults.posts.length > 0 || searchResults.profiles.length > 0 ? (
             <div className="search-results">
               <h3>Search Results:</h3>
-              {searchResults.map((post) => (
-                <div key={post._id} className="post">
-                  <h4>{post.title}</h4>
-                  <p>{post.content}</p>
-                  <small>By {post.user.name}</small>
-                </div>
-              ))}
+
+              {/* Render user profiles if there are any */}
+              {searchResults.profiles.length > 0 && (
+                <>
+                  <h4>User Profiles:</h4>
+                  {searchResults.profiles.map((profile) => (
+                    <div key={profile._id} className="profile-result">
+                      <img src={profile.profileImage} alt="Profile" className="profile-image" />
+                      <div className="profile-info">
+                        <h4>{profile.name}</h4>
+                        <p>{profile.bio}</p>
+                      </div>
+                    </div>
+                  ))}
+                </>
+              )}
+
+              {/* Render posts if there are any */}
+              {searchResults.posts.length > 0 && (
+                <>
+                  <h4>Posts:</h4>
+                  {searchResults.posts.map((post) => (
+                    <div key={post._id} className="post">
+                      <h4>{post.title}</h4>
+                      <p>{post.content}</p>
+                      <small>By {post.user.name}</small>
+                    </div>
+                  ))}
+                </>
+              )}
             </div>
+          ) : (
+            <p>No search results to display. Use the search bar to find posts or profiles.</p>
           )}
         </div>
       </div>
     </div>
   );
-}
+};
 
 export default DashboardPage;

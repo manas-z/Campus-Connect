@@ -32,9 +32,16 @@ const upload = multer({
 });
 
 // MongoDB Connection
-mongoose.connect(MONGODB_URI)
-  .then(() => console.log('Connected to MongoDB'))
-  .catch(err => console.error('Failed to connect to MongoDB:', err));
+mongoose.connect('mongodb+srv://jolvin:jolvin123@cluster0.kzhz3.mongodb.net/chatForum?retryWrites=true&w=majority', {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+})
+  .then(() => {
+    console.log('Connected to MongoDB');
+  })
+  .catch((err) => {
+    console.error('Failed to connect to MongoDB:', err);
+  });
 
 // User Registration
 app.post('/register', async (req, res) => {
@@ -174,15 +181,14 @@ app.post('/posts', async (req, res) => {
   }
 
   try {
-    // Create a new post with the current date and time
     const newPost = new Post({
       title,
       user,
       content,
-      createdAt: new Date(), // Explicitly setting the creation date
+      createdAt: new Date(),
     });
-  const savedPost = await newPost.save();
-  res.status(201).json(savedPost);
+    const savedPost = await newPost.save();
+    res.status(201).json(savedPost);
   } catch (err) {
     console.error('Error creating post:', err);
     res.status(500).json({ error: 'Server error creating post' });
@@ -192,7 +198,6 @@ app.post('/posts', async (req, res) => {
 // Get all posts
 app.get('/posts', async (req, res) => {
   try {
-    // Fetch posts sorted by creation date in descending order
     const posts = await Post.find().sort({ createdAt: -1 });
     res.status(200).json(posts);
   } catch (err) {
@@ -201,36 +206,42 @@ app.get('/posts', async (req, res) => {
   }
 });
 
-
+// Updated Search Endpoint
 app.get('/api/search', async (req, res) => {
   const { query } = req.query;
 
   if (!query) {
     return res.status(400).json({ error: 'Search query is required.' });
   }
-});
 
-// Like a post
-app.post('/posts/:id/like', async (req, res) => {
-  const { id } = req.params;
-  const { liked } = req.body;
+  const searchPhrase = query.trim();
 
   try {
-    const post = await Post.findById(id);
-    if (!post) return res.status(404).json({ error: 'Post not found' });
+    // Search for posts that contain the exact phrase in their title or content
+    const posts = await Post.find({
+      $or: [
+        { title: { $regex: searchPhrase, $options: 'i' } },    // Matches the exact phrase in the title
+        { content: { $regex: searchPhrase, $options: 'i' } },  // Matches the exact phrase in the content
+      ],
+    });
 
-    post.liked = liked;
-    post.likes = liked ? post.likes + 1 : post.likes - 1;
-    await post.save();
+    // Search for user profiles that contain the exact phrase in their name
+    const profiles = await UserProfile.find({
+      name: { $regex: searchPhrase, $options: 'i' },
+    });
 
-    res.status(200).json(post);
+    // Find posts created by users whose names match the search query
+    const userPosts = await Post.find().populate('user', 'name').where('user.name').regex(new RegExp(searchPhrase, 'i'));
+
+    // Combine the search results
+    res.json({ posts: [...posts, ...userPosts], profiles });
   } catch (err) {
-    console.error('Error liking post:', err);
-    res.status(500).json({ error: 'Server error liking post' });
+    console.error('Error searching:', err);
+    res.status(500).json({ error: 'Failed to search posts and profiles' });
   }
 });
 
-// Create a new comment on a post
+// Create a new comment on a post (without nesting)
 app.post('/posts/:postId/comments', async (req, res) => {
   const { postId } = req.params;
   const { user, text, parentCommentId } = req.body;
@@ -252,16 +263,7 @@ app.post('/posts/:postId/comments', async (req, res) => {
       createdAt: new Date(),
     };
 
-    if (parentCommentId) {
-      const parentComment = findCommentById(post.comments, parentCommentId);
-      if (parentComment) {
-        parentComment.replies.push(newComment);
-      } else {
-        return res.status(404).json({ error: 'Parent comment not found' });
-      }
-    } else {
-      post.comments.push(newComment);
-    }
+    post.comments.push(newComment);
 
     await post.save();
     res.status(201).json(post.comments);
@@ -290,6 +292,7 @@ app.get('/posts/:postId/comments', async (req, res) => {
       return res.status(404).json({ error: 'Post not found' });
     }
 
+    res.status(200).json(post.comments);
     res.status(200).json(post.comments);
   } catch (err) {
     console.error('Error fetching comments:', err);

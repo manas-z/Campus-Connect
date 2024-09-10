@@ -8,7 +8,7 @@ import './Dashboard.css'; // Import Dashboard styles for consistency
 
 const ChatForum = () => {
   const [posts, setPosts] = useState([]);
-  const [searchResults, setSearchResults] = useState([]);
+  const [searchResults, setSearchResults] = useState({ posts: [], profiles: [] });
   const [newPostTitle, setNewPostTitle] = useState('');
   const [newPostContent, setNewPostContent] = useState('');
   const [newComment, setNewComment] = useState('');
@@ -17,7 +17,6 @@ const ChatForum = () => {
   const [profileImage, setProfileImage] = useState('');
   const [showDropdown, setShowDropdown] = useState(false);
   const [commentsData, setCommentsData] = useState({ id: 1, items: [] });
-  const [postComments, setPostComments] = useState({});
 
   const { insertNode, editNode, deleteNode } = useNode();
 
@@ -64,54 +63,40 @@ const ChatForum = () => {
     setSearchResults(results);
   };
 
-  const toggleSearch = () => {
-    setShowSearch(!showSearch);
-  };
-
-  const toggleDropdown = () => {
-    setShowDropdown(!showDropdown);
-  };
-
   const handleAddPost = async () => {
-    const email = localStorage.getItem('userEmail');
-    const userName = localStorage.getItem('userName') || 'Anonymous'; // Fetch the user name from localStorage if available
-  
     if (newPostTitle.trim() && newPostContent.trim()) {
       const post = {
         title: newPostTitle,
         user: {
-          name: userName,
+          name: userName || 'Anonymous',
+          year: 'None',
           profileLogo: profileImage || 'default-profile-logo-url',
         },
         content: newPostContent,
-        comments: [], // Initialize comments as an empty array
-        };
-    
-        try {
-          const response = await fetch('http://localhost:5000/posts', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(post),
-          });
-          const newPost = await response.json();
-          if (response.ok) {
-            // Add new post to the beginning of the posts array
-            setPosts([newPost, ...posts]);
-            setNewPostTitle('');
-            setNewPostContent('');
-          } else {
-            console.error(newPost.error);
-          }
-        } catch (err) {
-          console.error('Error adding post:', err);
+      };
+
+      try {
+        const response = await fetch('http://localhost:5000/posts', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(post),
+        });
+        const newPost = await response.json();
+        if (response.ok) {
+          // Add new post to the beginning of the posts array
+          setPosts([newPost, ...posts]);
+          setNewPostTitle('');
+          setNewPostContent('');
+        } else {
+          console.error(newPost.error);
         }
+      } catch (err) {
+        console.error('Error adding post:', err);
       }
-    };
-    
-
-
+    }
+  };
 
   const handleLike = async (postId) => {
     const updatedPosts = posts.map(post =>
@@ -232,51 +217,59 @@ const ChatForum = () => {
             <button onClick={handleAddPost}>Create Forum</button>
           </div>
 
-          <ul className="posts-list">
-            {/* Display posts based on search results */}
-            {(searchResults.length > 0 ? searchResults : posts).map((post) => (
-              <li key={post._id} className="post">
-                <div className="post-header">
-                  <div className="profile">
-                    <img src={post.user.profileLogo} alt="Profile" className="profile-logo" />
+          <div className="search-results">
+            <h2>Search Results</h2>
+
+            {/* Render user profiles if there are any */}
+            {searchResults.profiles.length > 0 && (
+              <>
+                <h3>User Profiles:</h3>
+                {searchResults.profiles.map((profile) => (
+                  <div key={profile._id} className="profile-result">
+                    <img src={profile.profileImage} alt="Profile" className="profile-image" />
                     <div className="profile-info">
-                      <h3>{post.user.name}</h3>
-                      <p>Year: {post.user.year}</p>
+                      <h4>{profile.name}</h4>
+                      <p>{profile.bio}</p>
                     </div>
                   </div>
-                </div>
-                <div className="post-content">
-                  <h3>{post.title}</h3>
-                  <p>{post.content}</p>
-                </div>
-                <div className="post-actions">
-                  <textarea
-                    className="comment-input"
-                    placeholder="Add a comment"
-                    value={newComment}
-                    onChange={(e) => setNewComment(e.target.value)}
-                  />
-                  <div className="action-buttons">
-                    <button 
-                      className={`like-button ${post.liked ? 'liked' : ''}`} 
-                      onClick={() => handleLike(post._id)}
-                    >
-                      Like {post.likes}
-                    </button>
-                    <button 
-                      className="comment-button" 
-                      onClick={() => handleAddComment(post._id)}
-                    >
-                      Comment
-                    </button>
-                  </div>
-                </div>
-                <div className="comments-section">
-                  {renderComments(post.comments)}
-                </div>
-              </li>
-            ))}
-          </ul>
+                ))}
+              </>
+            )}
+
+            {/* Render posts if there are any */}
+            {searchResults.posts.length > 0 && (
+              <>
+                <h3>Posts:</h3>
+                <ul className="posts-list">
+                  {searchResults.posts.map((post) => (
+                    <li key={post._id} className="post">
+                      <div className="post-header">
+                        <div className="profile">
+                          <img src={post.user.profileLogo} alt="Profile" className="profile-logo" />
+                          <div className="profile-info">
+                            <h3>{post.user.name}</h3>
+                            <p>Year: {post.user.year}</p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="post-content">
+                        <h3>{post.title}</h3>
+                        <p>{post.content}</p>
+                      </div>
+                      <div className="comments-section">
+                        <Comment
+                          handleInsertNode={handleInsertNode}
+                          handleEditNode={handleEditNode}
+                          handleDeleteNode={handleDeleteNode}
+                          comment={commentsData}
+                        />
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </>
+            )}
+          </div>
         </div>
       </div>
     </div>
